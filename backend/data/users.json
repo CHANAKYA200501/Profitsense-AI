@@ -1,0 +1,20 @@
+[
+  {
+    "id": "admin-001",
+    "email": "admin@profitsense.ai",
+    "password_hash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "role": "admin",
+    "created_at": "2026-03-28T23:25:38.785983",
+    "last_login": "2026-03-28T23:32:21.224616",
+    "status": "active"
+  },
+  {
+    "id": "u-1774720538",
+    "email": "tushar.meerut786@gmail.com",
+    "password_hash": "5a9f80fc707002ad03212dcceba7740d4579df35f7cd2e3c605d2be639fa38ff",
+    "role": "user",
+    "created_at": "2026-03-28T23:25:38.787037",
+    "last_login": "2026-03-29T20:27:57.484859",
+    "status": "active"
+  }
+]
