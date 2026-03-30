@@ -8,7 +8,7 @@
 ##   SYSTEM OVERVIEW
 ## ╚══════════════════════════════════════════════════════╝
 
-ETMIND is a production-grade, multi-agent AI platform for Indian retail investors.
+PROFITSENSE is a production-grade, multi-agent AI platform for Indian retail investors.
 It continuously monitors NSE/BSE markets, detects high-signal opportunities using
 trained ML models, and delivers plain-English actionable alerts — personalized per user.
 
@@ -94,7 +94,7 @@ trained ML models, and delivers plain-English actionable alerts — personalized
 ## ╚══════════════════════════════════════════════════════╝
 
 ```
-etmind/
+PROFITSENSE/
 ├── backend/
 │   ├── main.py                    # FastAPI app entry
 │   ├── config.py                  # All env vars + settings
@@ -384,7 +384,7 @@ DIRECTION EMOJIS:
 ## README.md
 
 ```markdown
-# ETMIND — ET Markets AI Investor Intelligence
+# PROFITSENSE-AI Markets AI Investor Intelligence
 
 > *Turning NSE/BSE raw data into actionable signals. Before the retail investor misses them.*
 
@@ -447,8 +447,8 @@ python ml_training/train_all_models.py
 docker compose up -d
 
 # 4. Initialize database
-docker exec etmind_backend alembic upgrade head
-docker exec etmind_backend python -m backend.db.seed_backtest --years=3
+docker exec PROFITSENSE_backend alembic upgrade head
+docker exec PROFITSENSE_backend python -m backend.db.seed_backtest --years=3
 
 # 5. Access
 # Dashboard:    http://localhost:80
@@ -471,7 +471,7 @@ AI:         Claude API (Narrator Agent) + Sentence Transformers
 ## Architecture Diagram
 ```
                     ┌─────────────────────────────────────┐
-                    │         ETMIND SYSTEM                │
+                    │       PROFITSENSE SYSTEM            │
      NSE/BSE ──────►│  AGENT 1: Signal Finder             │
      Insider ──────►│  AGENT 2: Chart Pattern (ML)        │◄──── User Portfolio
      Bulk Deals ───►│  AGENT 3: Narrator (Claude API)     │
@@ -491,7 +491,7 @@ AI:         Claude API (Narrator Agent) + Sentence Transformers
 - Addressable value: ₹8,540 Cr/year across ET Markets user base
 
 ## Disclaimer
-ETMIND is an AI-powered signal tool, NOT SEBI-registered investment advice.
+PROFITSENSE is an AI-powered signal tool, NOT SEBI-registered investment advice.
 All signals are informational. Invest at your own risk.
 
 ---
