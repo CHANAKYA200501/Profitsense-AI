@@ -20,7 +20,7 @@ export const SignalFeed: React.FC = () => {
   const runScan = useCallback(async () => {
     setIsScanning(true);
     try {
-      const res = await fetch('http://localhost:8000/api/scan_now', { method: 'POST' });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/scan_now`, { method: 'POST' });
       const json = await res.json();
       if (json.status === 'success' && json.signals?.length > 0) {
         setSignals(json.signals);

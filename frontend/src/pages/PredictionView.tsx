@@ -54,7 +54,7 @@ export const PredictionView: React.FC = () => {
     destroyChart();
     candlesRef.current = [];
 
-    fetch(`http://localhost:8000/api/market/ohlcv?symbol=${encodeURIComponent(symbol)}&period=1mo&interval=1d`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/ohlcv?symbol=${encodeURIComponent(symbol)}&period=1mo&interval=1d`)
       .then((res) => res.json())
       .then((json) => {
         if (cancelledRef.current) return;

@@ -56,9 +56,9 @@ export const MarketView: React.FC = () => {
 
   const fetchMarketData = useCallback(async (isInitial: boolean = false) => {
     try {
-      const reportRes = await fetch('http://localhost:8000/api/market/report');
+      const reportRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/report`);
       const reportJson = await reportRes.json();
-      const overviewRes = await fetch('http://localhost:8000/api/market/overview');
+      const overviewRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/overview`);
       const overviewJson = await overviewRes.json();
       
       if (reportJson.status === 'success' && overviewJson.status === 'success') {

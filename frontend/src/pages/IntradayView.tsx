@@ -42,7 +42,7 @@ export const IntradayView: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    fetch(`http://localhost:8000/api/market/intraday?symbol=${encodeURIComponent(sym)}&interval=${intv}`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/intraday?symbol=${encodeURIComponent(sym)}&interval=${intv}`)
       .then((res) => res.json())
       .then((json) => {
         if (json.status !== 'success') {

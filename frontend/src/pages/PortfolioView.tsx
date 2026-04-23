@@ -14,8 +14,8 @@ export const PortfolioView: React.FC = () => {
     const fetchPortfolio = async () => {
       try {
         const [posRes, metRes] = await Promise.all([
-          fetch('http://localhost:8000/api/trade/positions'),
-          fetch('http://localhost:8000/api/trade/metrics')
+          fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/positions`),
+          fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/metrics`)
         ]);
         const posData = await posRes.json();
         const metData = await metRes.json();

@@ -26,7 +26,7 @@ export const AnalysisView: React.FC = () => {
   React.useEffect(() => {
     if (activeSymbol) {
       setPeersLoading(true);
-      fetch(`http://localhost:8000/api/analyze/peers?symbol=${activeSymbol}`)
+      fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/analyze/peers?symbol=${activeSymbol}`)
         .then(res => res.json())
         .then(data => {
           setPeersData(data);

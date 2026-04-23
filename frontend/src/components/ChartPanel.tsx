@@ -74,7 +74,7 @@ export const ChartPanel: React.FC = () => {
 
     const { period, interval } = PERIOD_MAP[activePeriod];
 
-    fetch(`http://localhost:8000/api/market/ohlcv?symbol=${encodeURIComponent(activeSymbol)}&period=${period}&interval=${interval}`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/ohlcv?symbol=${encodeURIComponent(activeSymbol)}&period=${period}&interval=${interval}`)
       .then((res) => res.json())
       .then((json) => {
         if (json.status === 'success' && json.data?.length > 0) {

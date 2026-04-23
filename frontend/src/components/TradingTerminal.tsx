@@ -13,7 +13,7 @@ export const TradingTerminal: React.FC<TradingTerminalProps> = ({ signal }) => {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/trade/metrics');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/metrics`);
       const data = await res.json();
       if (data.status === 'success') {
         setDemoCash(data.metrics.cash_reserves);
@@ -58,7 +58,7 @@ export const TradingTerminal: React.FC<TradingTerminalProps> = ({ signal }) => {
         confidence: params.confidence
       };
 
-      const res = await fetch('http://localhost:8000/api/trade/execute', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

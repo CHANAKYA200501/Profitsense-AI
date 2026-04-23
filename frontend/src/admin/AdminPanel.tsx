@@ -8,7 +8,7 @@ import {
   XCircle, RotateCcw
 } from 'lucide-react';
 
-const API = 'http://localhost:8000/api/admin';
+const API = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/admin`;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 async function apiCall(path: string, method = 'GET', token: string) {

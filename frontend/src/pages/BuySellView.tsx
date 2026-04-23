@@ -63,7 +63,7 @@ export const BuySellView: React.FC = () => {
   const fetchWallet = useCallback(async () => {
     setLoadingWallet(true);
     try {
-      const res = await fetch('http://localhost:8000/api/trade/wallet');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/wallet`);
       const data = await res.json();
       if (data.status === 'success') setWalletBalance(data.balance);
     } catch { /* silent */ }
@@ -79,7 +79,7 @@ export const BuySellView: React.FC = () => {
     setStockInfo(null);
     try {
       const res = await fetch(
-        `http://localhost:8000/api/market/intraday?symbol=${encodeURIComponent(sym)}&interval=5m`
+        `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/intraday?symbol=${encodeURIComponent(sym)}&interval=5m`
       );
       const data = await res.json();
       if (data.status === 'success' && data.stats) {
@@ -125,7 +125,7 @@ export const BuySellView: React.FC = () => {
       };
       if (orderType === 'LIMIT') payload.limit_price = execPrice;
 
-      const res = await fetch('http://localhost:8000/api/trade/manual_execute', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/manual_execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

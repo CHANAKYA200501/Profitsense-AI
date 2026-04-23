@@ -30,7 +30,7 @@ export const OpportunityRadarView: React.FC = () => {
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/radar/');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/radar/`);
       const data = await res.json();
       if (data.status === 'success') {
         setAlerts(data.alerts);

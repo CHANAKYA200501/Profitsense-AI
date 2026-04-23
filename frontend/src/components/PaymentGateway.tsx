@@ -60,7 +60,7 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
     // Call backend
     try {
       const ref = `ETM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-      const res = await fetch('http://localhost:8000/api/trade/add_funds', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/trade/add_funds`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
