@@ -199,7 +199,7 @@ export const MarketView: React.FC = () => {
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Primary Index</div>
                 <h3 className="text-5xl font-black text-slate-900 tracking-tighter mb-4 uppercase">Nifty 50</h3>
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl font-black text-slate-700 font-sans tracking-tighter italic">₹{nifty?.close.toLocaleString('en-IN')}</span>
+                  <span className="text-3xl font-black text-slate-700 font-sans tracking-tighter italic">₹{nifty?.close?.toLocaleString('en-IN') ?? '—'}</span>
                   <div className={`flex items-center gap-1 px-3 py-1 border font-bold text-[10px] uppercase ${nifty?.change_pct >= 0 ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
                     {nifty?.change_pct >= 0 ? '+' : ''}{nifty?.change_pct}%
                   </div>
@@ -222,7 +222,7 @@ export const MarketView: React.FC = () => {
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Secondary Index</div>
                 <h3 className="text-5xl font-black text-slate-900 tracking-tighter mb-4 uppercase">Sensex</h3>
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl font-black text-slate-700 font-sans tracking-tighter italic">₹{sensex?.close.toLocaleString('en-IN')}</span>
+                  <span className="text-3xl font-black text-slate-700 font-sans tracking-tighter italic">₹{sensex?.close?.toLocaleString('en-IN') ?? '—'}</span>
                   <div className={`flex items-center gap-1 px-3 py-1 border font-bold text-[10px] uppercase ${sensex?.change_pct >= 0 ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
                     {sensex?.change_pct >= 0 ? '+' : ''}{sensex?.change_pct}%
                   </div>
@@ -322,17 +322,24 @@ export const MarketView: React.FC = () => {
                 <div className="h-[1px] flex-1 bg-slate-50" />
               </h3>
               <div className="grid grid-cols-2 gap-px bg-slate-100 border border-slate-100 shadow-inner">
-                {market_intelligence.sectors && Object.entries(market_intelligence.sectors).map(([sector, score]) => (
-                  <div key={sector} className="bg-white p-5 border border-slate-50 hover:bg-slate-50 transition-all group/item">
-                    <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-2 truncate">{sector}</div>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-lg font-black tracking-tighter italic ${score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {score >= 0 ? '+' : ''}{score}%
-                      </span>
-                      <div className={`w-0.5 h-4 ${score >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                {market_intelligence.sectors && Object.keys(market_intelligence.sectors).length > 0 ? (
+                  Object.entries(market_intelligence.sectors).map(([sector, score]) => (
+                    <div key={sector} className="bg-white p-5 border border-slate-50 hover:bg-slate-50 transition-all group/item">
+                      <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-2 truncate">{sector}</div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-lg font-black tracking-tighter italic ${(score as number) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(score as number) >= 0 ? '+' : ''}{score as number}%
+                        </span>
+                        <div className={`w-0.5 h-4 ${(score as number) >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-2 bg-white p-8 flex flex-col items-center justify-center gap-3">
+                    <div className="w-8 h-8 border-t-2 border-blue-600 animate-spin" />
+                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Loading sector data...</div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -350,17 +357,24 @@ export const MarketView: React.FC = () => {
                   <TrendingUp size={14} /> Top Gainers
                 </h4>
                 <div className="space-y-5">
-                  {market_intelligence.top_gainers.slice(0, 5).map((stock) => (
-                    <div key={stock.symbol} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group transition-all">
-                      <div>
-                        <div className="text-sm font-black text-slate-900 tracking-tighter group-hover:text-green-600 transition-colors uppercase">{stock.symbol}</div>
-                        <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-sans">Price: ₹{stock.price}</div>
+                  {market_intelligence.top_gainers && market_intelligence.top_gainers.length > 0 ? (
+                    market_intelligence.top_gainers.slice(0, 5).map((stock) => (
+                      <div key={stock.symbol} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group transition-all">
+                        <div>
+                          <div className="text-sm font-black text-slate-900 tracking-tighter group-hover:text-green-600 transition-colors uppercase">{stock.symbol}</div>
+                          <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-sans">Price: ₹{stock.price?.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-black text-green-600 italic">+{stock.change_pct}%</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-black text-green-600 italic">+{stock.change_pct}%</div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="py-6 flex flex-col items-center gap-2">
+                      <div className="w-6 h-6 border-t-2 border-green-400 animate-spin" />
+                      <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Scanning...</div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -370,17 +384,24 @@ export const MarketView: React.FC = () => {
                   <TrendingDown size={14} /> Top Losers
                 </h4>
                 <div className="space-y-5">
-                  {market_intelligence.top_losers.slice(0, 5).map((stock) => (
-                    <div key={stock.symbol} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group transition-all">
-                      <div>
-                        <div className="text-sm font-black text-slate-900 tracking-tighter group-hover:text-red-600 transition-colors uppercase">{stock.symbol}</div>
-                        <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-sans">Price: ₹{stock.price}</div>
+                  {market_intelligence.top_losers && market_intelligence.top_losers.length > 0 ? (
+                    market_intelligence.top_losers.slice(0, 5).map((stock) => (
+                      <div key={stock.symbol} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group transition-all">
+                        <div>
+                          <div className="text-sm font-black text-slate-900 tracking-tighter group-hover:text-red-600 transition-colors uppercase">{stock.symbol}</div>
+                          <div className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 font-sans">Price: ₹{stock.price?.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-black text-red-600 italic">{stock.change_pct}%</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-black text-red-600 italic">{stock.change_pct}%</div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="py-6 flex flex-col items-center gap-2">
+                      <div className="w-6 h-6 border-t-2 border-red-400 animate-spin" />
+                      <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Scanning...</div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>

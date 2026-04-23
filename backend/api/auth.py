@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import hashlib
-from typing import Optional
 from .db import find_user_by_email, add_user, update_last_login
 
 router = APIRouter()

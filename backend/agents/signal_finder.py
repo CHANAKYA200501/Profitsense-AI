@@ -11,7 +11,6 @@ from services.technical_rules import TechnicalRulesEngine
 from services.pattern_detector import PatternDetector
 import uuid
 from datetime import datetime, timezone
-import math
 
 # NIFTY 500 fallback universe (used when NSE API is unavailable)
 NIFTY500_FALLBACK = [

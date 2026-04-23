@@ -1,0 +1,11 @@
+[
+  {
+    "id": "TXN-F275857F",
+    "amount": 500000.0,
+    "method": "CARD",
+    "ref": "ETM-1776924694689-2YSQ0N",
+    "status": "CREDITED",
+    "timestamp": "2026-04-23T11:41:34.694032",
+    "balance_after": 1500000.0
+  }
+]

@@ -1,10 +1,8 @@
 import requests
 import pandas as pd
 import time
-import json
-from typing import List, Dict, Optional
-from datetime import datetime, timedelta
-from functools import lru_cache
+from typing import List, Dict
+from datetime import datetime
 import yfinance as yf
 
 class NSEClient:
@@ -66,7 +64,7 @@ class NSEClient:
                                      params=params, timeout=15)
                 r.raise_for_status()
                 return r.json()
-            except Exception as e:
+            except Exception:
                 if attempt < retries - 1:
                     time.sleep(2 ** attempt)  # Exponential backoff
                 else:
@@ -272,7 +270,6 @@ class AMFIClient:
         Negative amount = investment, positive = current value / redemption
         """
         from scipy import optimize
-        import numpy_financial as npf
         
         if len(transactions) < 2:
             return 0.0

@@ -2,11 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
 import yfinance as yf
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import math
-import uuid
 
 router = APIRouter()
 
@@ -201,10 +198,10 @@ def make_decision(tech: dict, news: dict, buy_price: float, current_price: float
     rsi = tech.get('rsi_14', 50)
     macd = tech.get('macd', 0)
     above_ema20 = tech.get('above_ema20', False)
-    above_ema50 = tech.get('above_ema50', False)
+    tech.get('above_ema50', False)
     golden_cross = tech.get('golden_cross', False)
     resistance = tech.get('resistance', current_price * 1.05)
-    atr = tech.get('atr_14', current_price * 0.02)
+    tech.get('atr_14', current_price * 0.02)
     pnl_pct = ((current_price - buy_price) / buy_price * 100) if buy_price > 0 else 0
 
     # RSI signals

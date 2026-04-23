@@ -72,7 +72,8 @@ export const VideoEngineView: React.FC = () => {
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, currentScene, scenes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, currentScene]);
 
   const reset = () => {
     setCurrentScene(0);

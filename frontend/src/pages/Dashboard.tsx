@@ -174,14 +174,21 @@ export const Dashboard: React.FC = () => {
 
         {/* User Status */}
         <div className="p-4 border-t border-slate-100 bg-slate-50">
+          <button 
+            onClick={() => { window.history.pushState({}, '', '/portal/user'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+            className="w-full mb-3 flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm italic rounded-none border border-blue-700"
+          >
+            <Shield size={12} /> Security Portal
+          </button>
           <div className="flex items-center justify-between p-3 border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-900 uppercase italic">{user?.email?.split('@')[0]}</span>
+              <span className="text-[10px] font-black text-slate-900 uppercase italic">{user?.name || user?.email?.split('@')[0]}</span>
               <span className="text-[8px] text-blue-600 font-bold tracking-widest uppercase italic">Live Session</span>
             </div>
             <button 
               onClick={logout}
               className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+              title="End Session"
             >
               <LogOut size={16} />
             </button>

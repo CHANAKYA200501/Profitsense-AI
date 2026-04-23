@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from data.nse_fetcher import NewsClient, YFinanceClient
+from data.nse_fetcher import NewsClient
 import math
 
 router = APIRouter()
@@ -238,14 +238,66 @@ def get_expiry_data():
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
 
 
-@router.get("/report")
-def get_market_report():
-    """Generate comprehensive daily market intelligence report with NIFTY + SENSEX, sectors, gainers/losers."""
+import threading
+
+_report_lock = threading.Lock()
+_report_generating = False
+
+def _generate_report_bg():
+    """Background thread that generates the report."""
+    global _report_generating
     try:
         from services.report_generator import MarketReportGenerator
         gen = MarketReportGenerator()
-        report = gen.generate_report()
-        return {"status": "success", "report": report}
+        gen.generate_report()  # This populates the class-level cache
+    except Exception as e:
+        print(f"[BG Report] Error: {e}")
+    finally:
+        global _report_generating
+        _report_generating = False
+
+
+@router.get("/report")
+def get_market_report():
+    """Generate comprehensive daily market intelligence report with NIFTY + SENSEX, sectors, gainers/losers."""
+    global _report_generating
+    try:
+        from services.report_generator import MarketReportGenerator
+        gen = MarketReportGenerator()
+
+        # Check if we have a valid cache
+        from datetime import datetime
+        now = datetime.now()
+        if gen._cache_time and (now - gen._cache_time) < gen._CACHE_DURATION:
+            return {"status": "success", "report": gen._cache}
+
+        # No cache — start background generation if not already running
+        if not _report_generating:
+            with _report_lock:
+                if not _report_generating:
+                    _report_generating = True
+                    t = threading.Thread(target=_generate_report_bg, daemon=True)
+                    t.start()
+
+        # Return partial data immediately (indices only, empty intelligence)
+        if gen._cache:
+            return {"status": "success", "report": gen._cache}
+
+        # No cache at all yet — return skeleton so frontend doesn't error
+        return {
+            "status": "success",
+            "report": {
+                "generated_at": now.isoformat(),
+                "indices": {},
+                "market_intelligence": {
+                    "sectors": {},
+                    "top_gainers": [],
+                    "top_losers": [],
+                    "aggregated_nifty_volume": 0,
+                    "ai_insight": "Initializing market data feed... First load takes ~10 seconds."
+                }
+            }
+        }
     except Exception as e:
         import traceback
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}

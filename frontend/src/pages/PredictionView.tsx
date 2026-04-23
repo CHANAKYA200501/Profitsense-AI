@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createChart, ColorType, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries } from 'lightweight-charts';
 import { useStore } from '../store/useStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Brain,
   TrendingUp,
@@ -30,38 +30,58 @@ export const PredictionView: React.FC = () => {
   const { signals, activeSymbol, setActiveSymbol } = useStore();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<any>(null);
+  const candlesRef = useRef<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<PredictionData | null>(null);
+  const [fetchError, setFetchError] = useState(false);
 
-  // Generate prediction data from signal + OHLCV data
-  const generatePrediction = useCallback((symbol: string) => {
+  // Safely destroy the current chart instance
+  const destroyChart = useCallback(() => {
+    if (chartInstance.current) {
+      try {
+        chartInstance.current.remove();
+      } catch (e) {
+        // Chart already disposed — safe to ignore
+      }
+      chartInstance.current = null;
+    }
+  }, []);
+
+  // Fetch OHLCV data and compute prediction — chart is built in a separate useEffect
+  const generatePrediction = useCallback((symbol: string, cancelledRef: { current: boolean }) => {
     setLoading(true);
+    setFetchError(false);
+    destroyChart();
+    candlesRef.current = [];
 
     fetch(`http://localhost:8000/api/market/ohlcv?symbol=${encodeURIComponent(symbol)}&period=1mo&interval=1d`)
       .then((res) => res.json())
       .then((json) => {
-        if (json.status !== 'success' || !json.data?.length) return;
+        if (cancelledRef.current) return;
+
+        if (json.status !== 'success' || !json.data?.length) {
+          setFetchError(true);
+          setPrediction(null);
+          return;
+        }
 
         const candles = json.data;
+        candlesRef.current = candles;
         const lastPrice = candles[candles.length - 1].close;
         const closes = candles.map((c: any) => c.close);
 
-        // Calculate volatility (std dev of daily returns)
         const returns = closes.slice(1).map((c: number, i: number) => (c - closes[i]) / closes[i]);
         const avgReturn = returns.reduce((a: number, b: number) => a + b, 0) / returns.length;
         const volatility = Math.sqrt(returns.reduce((a: number, b: number) => a + (b - avgReturn) ** 2, 0) / returns.length);
 
-        // Simple trend Analysis
         const recent5 = closes.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5;
         const recent10 = closes.slice(-10).reduce((a: number, b: number) => a + b, 0) / Math.min(10, closes.length);
         const trendBias = (recent5 - recent10) / recent10;
 
-        // Future projection Alpha
         const pred1D = lastPrice * (1 + trendBias * 0.3);
         const pred1W = lastPrice * (1 + trendBias * 1.5);
         const pred1M = lastPrice * (1 + trendBias * 5);
 
-        // Technical Thresholds
         const sortedPrices = [...closes].sort((a, b) => a - b);
         const support1 = sortedPrices[Math.floor(sortedPrices.length * 0.1)];
         const support2 = sortedPrices[Math.floor(sortedPrices.length * 0.25)];
@@ -75,126 +95,89 @@ export const PredictionView: React.FC = () => {
           symbol,
           current_price: lastPrice,
           predictions: {
-            '1D': {
-              low: Math.round(lastPrice * (1 - volatility * 1.2) * 100) / 100,
-              high: Math.round(lastPrice * (1 + volatility * 1.2) * 100) / 100,
-              predicted: Math.round(pred1D * 100) / 100,
-              confidence: Math.min(95, signalConfidence + 10),
-            },
-            '1W': {
-              low: Math.round(lastPrice * (1 - volatility * 3) * 100) / 100,
-              high: Math.round(lastPrice * (1 + volatility * 3) * 100) / 100,
-              predicted: Math.round(pred1W * 100) / 100,
-              confidence: Math.min(85, signalConfidence),
-            },
-            '1M': {
-              low: Math.round(lastPrice * (1 - volatility * 7) * 100) / 100,
-              high: Math.round(lastPrice * (1 + volatility * 7) * 100) / 100,
-              predicted: Math.round(pred1M * 100) / 100,
-              confidence: Math.max(40, signalConfidence - 15),
-            },
+            '1D': { low: Math.round(lastPrice * (1 - volatility * 1.2) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 1.2) * 100) / 100, predicted: Math.round(pred1D * 100) / 100, confidence: Math.min(95, signalConfidence + 10) },
+            '1W': { low: Math.round(lastPrice * (1 - volatility * 3) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 3) * 100) / 100, predicted: Math.round(pred1W * 100) / 100, confidence: Math.min(85, signalConfidence) },
+            '1M': { low: Math.round(lastPrice * (1 - volatility * 7) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 7) * 100) / 100, predicted: Math.round(pred1M * 100) / 100, confidence: Math.max(40, signalConfidence - 15) },
           },
           support_levels: [Math.round(support1 * 100) / 100, Math.round(support2 * 100) / 100],
           resistance_levels: [Math.round(resistance1 * 100) / 100, Math.round(resistance2 * 100) / 100],
           bull_scenario: {
             probability: trendBias > 0 ? Math.round(55 + trendBias * 200) : Math.round(35 + trendBias * 100),
             target: Math.round(lastPrice * (1 + volatility * 5) * 100) / 100,
-            rationale: trendBias > 0
-              ? 'Bullish Momentum Detected: Short-term moving average confirms an upside trend with increasing accumulation.'
-              : 'Reversal Projection: Historical support levels show strong integrity with a projected ascending delta.',
+            rationale: trendBias > 0 ? 'Bullish Momentum Detected: Short-term moving average confirms an upside trend with increasing accumulation.' : 'Reversal Projection: Historical support levels show strong integrity with a projected ascending delta.',
           },
           bear_scenario: {
             probability: trendBias < 0 ? Math.round(55 + Math.abs(trendBias) * 200) : Math.round(35 + Math.abs(trendBias) * 100),
             target: Math.round(lastPrice * (1 - volatility * 5) * 100) / 100,
-            rationale: trendBias < 0
-              ? 'Bearish Trajectory: Selling pressure has increased, making critical support levels vulnerable to a breach.'
-              : 'Mean Reversion: Momentum indicators show overbought conditions, suggesting a potential reversion to the mean.',
+            rationale: trendBias < 0 ? 'Bearish Trajectory: Selling pressure has increased, making critical support levels vulnerable to a breach.' : 'Mean Reversion: Momentum indicators show overbought conditions, suggesting a potential reversion to the mean.',
           },
         };
 
-        setPrediction(predData);
-
-        // Render chart with prediction overlay
-        if (chartRef.current) {
-          if (chartInstance.current) chartInstance.current.remove();
-
-          const chart = createChart(chartRef.current, {
-            autoSize: true,
-            layout: {
-              background: { type: ColorType.Solid, color: 'transparent' },
-              textColor: '#71717a',
-              fontFamily: 'Inter, sans-serif',
-            },
-            grid: {
-              vertLines: { color: '#f1f5f9' },
-              horzLines: { color: '#f1f5f9' },
-            },
-            crosshair: { mode: CrosshairMode.Normal },
-            rightPriceScale: { borderColor: '#e2e8f0' },
-            timeScale: { borderColor: '#e2e8f0' },
-          });
-          chartInstance.current = chart;
-
-          // Historical candles
-          const candleSeries = chart.addSeries(CandlestickSeries, {
-            upColor: '#22c55e',
-            downColor: '#ff0000',
-            borderVisible: false,
-            wickUpColor: '#22c55e',
-            wickDownColor: '#ff0000',
-          });
-          candleSeries.setData(
-            candles.map((c: any) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }))
-          );
-
-          // Prediction line (dashed future projection)
-          const lastTime = candles[candles.length - 1].time;
-          const predLine = chart.addSeries(LineSeries, {
-            color: '#2563eb',
-            lineWidth: 2,
-            lineStyle: 2, // dashed
-            priceLineVisible: false,
-            lastValueVisible: true,
-          });
-
-          // Create future points
-          const dayInSeconds = 86400;
-          predLine.setData([
-            { time: lastTime as any, value: lastPrice },
-            { time: ((lastTime as number) + dayInSeconds * 7) as any, value: predData.predictions['1W'].predicted },
-            { time: ((lastTime as number) + dayInSeconds * 30) as any, value: predData.predictions['1M'].predicted },
-          ]);
-
-          // Prediction cone (area between high and low)
-          const coneSeries = chart.addSeries(AreaSeries, {
-            topColor: 'rgba(37, 99, 235, 0.1)',
-            bottomColor: 'rgba(37, 99, 235, 0.01)',
-            lineColor: 'rgba(37, 99, 235, 0.2)',
-            lineWidth: 1,
-            priceLineVisible: false,
-            lastValueVisible: false,
-          });
-          coneSeries.setData([
-            { time: lastTime as any, value: lastPrice },
-            { time: ((lastTime as number) + dayInSeconds * 7) as any, value: predData.predictions['1W'].high },
-            { time: ((lastTime as number) + dayInSeconds * 30) as any, value: predData.predictions['1M'].high },
-          ]);
-
-          chart.timeScale().fitContent();
-        }
+        if (!cancelledRef.current) setPrediction(predData);
       })
-      .catch((err) => console.error('Prediction fetch error:', err))
-      .finally(() => setLoading(false));
-  }, [signals]);
+      .catch((err) => {
+        if (!cancelledRef.current) { console.error('Prediction fetch error:', err); setFetchError(true); setPrediction(null); }
+      })
+      .finally(() => {
+        if (!cancelledRef.current) setLoading(false);
+      });
+  }, [signals, destroyChart]);
 
+  // Trigger fetch when symbol changes
   useEffect(() => {
-    if (activeSymbol) {
-      generatePrediction(activeSymbol);
-    }
-    return () => {
-      if (chartInstance.current) chartInstance.current.remove();
-    };
-  }, [activeSymbol, generatePrediction]);
+    const cancelledRef = { current: false };
+    if (activeSymbol) generatePrediction(activeSymbol, cancelledRef);
+    return () => { cancelledRef.current = true; destroyChart(); };
+  }, [activeSymbol, generatePrediction, destroyChart]);
+
+  // Build chart AFTER prediction state is set and DOM has re-rendered with chartRef
+  useEffect(() => {
+    if (!prediction || loading || candlesRef.current.length === 0) return;
+    // Wait one frame for React to paint the chartRef container
+    const raf = requestAnimationFrame(() => {
+      if (!chartRef.current) return;
+      destroyChart();
+      try {
+        const candles = candlesRef.current;
+        const lastPrice = prediction.current_price;
+        const chart = createChart(chartRef.current!, {
+          autoSize: true,
+          layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: '#71717a', fontFamily: 'Inter, sans-serif' },
+          grid: { vertLines: { color: '#f1f5f9' }, horzLines: { color: '#f1f5f9' } },
+          crosshair: { mode: CrosshairMode.Normal },
+          rightPriceScale: { borderColor: '#e2e8f0' },
+          timeScale: { borderColor: '#e2e8f0' },
+        });
+        chartInstance.current = chart;
+
+        const candleSeries = chart.addSeries(CandlestickSeries, { upColor: '#22c55e', downColor: '#ff0000', borderVisible: false, wickUpColor: '#22c55e', wickDownColor: '#ff0000' });
+        candleSeries.setData(candles.map((c: any) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+
+        const lastTime = candles[candles.length - 1].time;
+        const dayInSeconds = 86400;
+
+        const predLine = chart.addSeries(LineSeries, { color: '#2563eb', lineWidth: 2, lineStyle: 2, priceLineVisible: false, lastValueVisible: true });
+        predLine.setData([
+          { time: lastTime as any, value: lastPrice },
+          { time: ((lastTime as number) + dayInSeconds * 7) as any, value: prediction.predictions['1W'].predicted },
+          { time: ((lastTime as number) + dayInSeconds * 30) as any, value: prediction.predictions['1M'].predicted },
+        ]);
+
+        const coneSeries = chart.addSeries(AreaSeries, { topColor: 'rgba(37, 99, 235, 0.1)', bottomColor: 'rgba(37, 99, 235, 0.01)', lineColor: 'rgba(37, 99, 235, 0.2)', lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+        coneSeries.setData([
+          { time: lastTime as any, value: lastPrice },
+          { time: ((lastTime as number) + dayInSeconds * 7) as any, value: prediction.predictions['1W'].high },
+          { time: ((lastTime as number) + dayInSeconds * 30) as any, value: prediction.predictions['1M'].high },
+        ]);
+
+        chart.timeScale().fitContent();
+      } catch (err) {
+        console.error('Chart creation error:', err);
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prediction, loading]);
 
   return (
     <main className="flex-1 flex overflow-hidden min-h-0 bg-[#f8fafc] font-sans relative">
@@ -241,18 +224,8 @@ export const PredictionView: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
-        <AnimatePresence mode="wait">
-          {loading ? (
-            <div className="flex-1 h-full flex flex-col items-center justify-center p-20">
-              <div className="w-16 h-16 border-t-2 border-blue-600 animate-spin mb-8" />
-              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Calculating Price Projections...</p>
-            </div>
-          ) : prediction ? (
-            <motion.div
-              key={prediction.symbol}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+          {prediction ? (
+            <div
               className="p-10 max-w-6xl mx-auto space-y-12"
             >
                {/* Header */}
@@ -279,6 +252,12 @@ export const PredictionView: React.FC = () => {
               {/* Chart with Prediction */}
               <div className="bg-white p-8 border border-slate-200 h-[500px] relative overflow-hidden group shadow-sm">
                 <div ref={chartRef} className="w-full h-full" />
+                {loading && (
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                    <div className="w-12 h-12 border-t-2 border-blue-600 animate-spin mb-6" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Calculating Price Projections...</p>
+                  </div>
+                )}
               </div>
 
               {/* Prediction Cards - Forecast Horizons */}
@@ -421,7 +400,24 @@ export const PredictionView: React.FC = () => {
                     <span className="uppercase tracking-widest">Algorithmic projections are based on historical data patterns and quantitative analysis. Past performance is not indicative of future results. Consult a financial advisor before making any investment decisions.</span>
                  </p>
               </div>
-            </motion.div>
+            </div>
+          ) : loading ? (
+            <div className="flex-1 h-full flex flex-col items-center justify-center p-20">
+              <div className="w-16 h-16 border-t-2 border-blue-600 animate-spin mb-8" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Calculating Price Projections...</p>
+            </div>
+          ) : fetchError ? (
+            <div className="flex flex-col h-full items-center justify-center p-20 text-center space-y-12">
+              <div className="w-32 h-32 bg-white border-2 border-red-100 flex items-center justify-center shadow-sm">
+                <ShieldAlert size={64} className="text-red-200" />
+              </div>
+              <div className="space-y-6">
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-widest italic">Data Unavailable</h3>
+                <p className="text-xs text-slate-400 max-w-lg leading-loose font-bold uppercase tracking-widest italic">
+                  Could not fetch market data for this symbol. Try selecting another signal.
+                </p>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col h-full items-center justify-center p-20 text-center space-y-12">
               <div className="w-32 h-32 bg-white border-2 border-slate-100 flex items-center justify-center shadow-sm relative overflow-hidden group">
@@ -436,7 +432,6 @@ export const PredictionView: React.FC = () => {
               </div>
             </div>
           )}
-        </AnimatePresence>
       </div>
     </main>
   );

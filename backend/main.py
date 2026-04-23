@@ -1,4 +1,3 @@
-import asyncio
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,6 +5,7 @@ import redis.asyncio as aioredis
 import os
 
 from api import signals, portfolio, analyze, backtest, mf, auth, chat, market, paper_trading, trade_advisor, radar, video, admin as admin_api
+from api import security_auth, security_admin
 from alerts.telegram import TelegramAlerter
 
 app = FastAPI(title="ProfitSense AI API", version="1.0.0")
@@ -31,6 +31,10 @@ app.include_router(trade_advisor.router, prefix="/api/advisor", tags=["Trade Adv
 app.include_router(radar.router, prefix="/api/radar", tags=["Opportunity Radar"])
 app.include_router(video.router, prefix="/api/video", tags=["Video Engine"])
 app.include_router(admin_api.router, prefix="/api/admin", tags=["Admin"])
+
+# Security Portal Routes
+app.include_router(security_auth.router, prefix="/api/portal/auth", tags=["Portal Auth"])
+app.include_router(security_admin.router, prefix="/api/portal", tags=["Portal Admin"])
 
 @app.get("/api/health")
 async def health_check():
@@ -81,12 +85,30 @@ def _generate_fallback_signals():
         except (TypeError, ValueError):
             return default
     
-    WATCHLIST = ["RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "SBIN", "ITC", "BHARTIARTL"]
+    WATCHLIST = [
+        # IT
+        "TCS.NS", "INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS",
+        # Banks / Finance
+        "HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS",
+        # Energy / Infra / Power
+        "RELIANCE.NS", "NTPC.NS", "ONGC.NS", "POWERGRID.NS", "COALINDIA.NS", "LT.NS",
+        # Auto
+        "MARUTI.NS", "TATAMOTORS.NS", "M&M.NS", "BAJAJ-AUTO.NS",
+        # Pharma
+        "SUNPHARMA.NS", "CIPLA.NS", "DRREDDY.NS", "DIVISLAB.NS",
+        # Metal
+        "TATASTEEL.NS", "JSWSTEEL.NS", "HINDALCO.NS",
+        # FMCG
+        "ITC.NS", "HINDUNILVR.NS",
+        # Worldwide
+        "AAPL", "TSLA", "GOOGL", "MSFT", "AMZN", "NVDA", "META"
+    ]
     signals = []
     
-    for symbol in WATCHLIST:
+    for full_ticker in WATCHLIST:
+        symbol = full_ticker.split('.')[0]
         try:
-            ticker = yf.Ticker(f"{symbol}.NS")
+            ticker = yf.Ticker(full_ticker)
             df = ticker.history(period="1mo")
             # Drop rows with NaN OHLC values
             df = df.dropna(subset=["Open", "High", "Low", "Close"])
@@ -100,7 +122,7 @@ def _generate_fallback_signals():
                 continue
             
             current = closes[-1]
-            prev = closes[-2]
+            closes[-2]
             
             # Calculate real technical indicators
             # RSI-14

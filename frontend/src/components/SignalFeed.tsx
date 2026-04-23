@@ -1,11 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { Play, Loader, RefreshCw } from 'lucide-react';
+import { Play, Loader, RefreshCw, Search } from 'lucide-react';
 
 export const SignalFeed: React.FC = () => {
   const { signals, setActiveSymbol, setSignals, activeSymbol } = useStore();
   const [isScanning, setIsScanning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSignals = useMemo(() => {
+    if (!searchQuery) return signals;
+    const lowerQuery = searchQuery.toLowerCase();
+    return signals.filter(sig => 
+      sig.symbol.toLowerCase().includes(lowerQuery) ||
+      (sig.narration && sig.narration.headline.toLowerCase().includes(lowerQuery))
+    );
+  }, [signals, searchQuery]);
 
   const runScan = useCallback(async () => {
     setIsScanning(true);
@@ -33,31 +43,44 @@ export const SignalFeed: React.FC = () => {
   return (
     <div className="overflow-hidden h-full flex flex-col shadow-sm border border-slate-200 bg-white italic">
       <div className="p-8 border-b border-slate-100 bg-slate-50 flex items-center justify-between relative overflow-hidden">
-        <div className="flex flex-col relative z-10">
-          <h2 className="text-[10px] uppercase tracking-widest font-black text-blue-600 flex items-center gap-3">
-             <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-             Active Signals
-          </h2>
-          <span className="text-[8px] text-slate-400 font-bold mt-2 uppercase tracking-widest opacity-60">Coverage: Nifty 500</span>
-        </div>
-        
-        <div className="flex items-center space-x-3 relative z-10">
-          <button 
-            onClick={runScan} 
-            disabled={isScanning}
-            className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 transition disabled:opacity-30 cursor-pointer shadow-md"
-          >
-            {isScanning ? <Loader size={12} className="animate-spin" /> : <Play size={12} />}
-            {isScanning ? 'Syncing' : 'Analyze'}
-          </button>
-
-          <button 
-            onClick={runScan} 
-            disabled={isScanning}
-            className="flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-400 hover:text-blue-600 border border-slate-200 shadow-sm transition-all group"
-          >
-            <RefreshCw size={14} className={isScanning ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
-          </button>
+        <div className="flex flex-col relative z-10 w-full">
+          <div className="flex items-center justify-between w-full mb-4">
+            <h2 className="text-[10px] uppercase tracking-widest font-black text-blue-600 flex items-center gap-3">
+               <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+               Active Signals
+            </h2>
+            <div className="flex items-center space-x-3 relative z-10">
+              <button 
+                onClick={runScan} 
+                disabled={isScanning}
+                className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 transition disabled:opacity-30 cursor-pointer shadow-md"
+              >
+                {isScanning ? <Loader size={12} className="animate-spin" /> : <Play size={12} />}
+                {isScanning ? 'Syncing' : 'Analyze'}
+              </button>
+              <button 
+                onClick={runScan} 
+                disabled={isScanning}
+                className="flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-400 hover:text-blue-600 border border-slate-200 shadow-sm transition-all group"
+              >
+                <RefreshCw size={14} className={isScanning ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="relative w-full">
+             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={14} className="text-slate-400" />
+             </div>
+             <input
+                type="text"
+                placeholder="SEARCH TICKER OR SECTOR (E.G., ENERGY, AUTO, WORLDWIDE)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-inner italic transition-all"
+             />
+          </div>
+          <span className="text-[8px] text-slate-400 font-bold mt-3 uppercase tracking-widest opacity-60">Coverage: NSE & Global Equities</span>
         </div>
       </div>
       
@@ -68,12 +91,12 @@ export const SignalFeed: React.FC = () => {
               <div className="w-12 h-12 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6" />
               <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Fetching Market Signals...</p>
             </div>
-          ) : signals.length === 0 ? (
+          ) : filteredSignals.length === 0 ? (
             <div className="text-center py-20 text-gray-700">
-               <span className="text-[10px] font-black uppercase tracking-widest">Waiting for Data Feed...</span>
+               <span className="text-[10px] font-black uppercase tracking-widest">{searchQuery ? 'No matching signals found.' : 'Waiting for Data Feed...'}</span>
             </div>
           ) : (
-            signals.map((sig: any) => {
+            filteredSignals.map((sig: any) => {
               const rec = sig.recommendation || (sig.direction === 'bullish' ? 'BUY' : 'SELL');
               const isActive = activeSymbol === sig.symbol;
               

@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 from typing import List, Dict
 from services.report_generator import MarketReportGenerator

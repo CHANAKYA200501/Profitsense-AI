@@ -3,7 +3,6 @@ Technical Indicator Rules Engine — RSI/MACD/EMA decision logic for BUY/SELL/HO
 Provides time-horizon classification (Intraday / Short / Swing).
 """
 import pandas as pd
-import numpy as np
 
 class TechnicalRulesEngine:
     """Rule-based overlay on top of the ML ensemble for explainable BUY/SELL decisions."""

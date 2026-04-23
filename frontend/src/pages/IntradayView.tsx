@@ -229,13 +229,8 @@ export const IntradayView: React.FC = () => {
       <div className="flex-1 flex overflow-hidden min-h-0 relative z-10">
         <div className="flex-1 flex flex-col p-10 min-w-0 space-y-8 overflow-y-auto custom-scrollbar">
           {/* Market Snapshot */}
-          <AnimatePresence mode="wait">
-            {stats && (
-              <motion.div
-                key={symbol}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
+          {stats && (
+              <div
                 className="flex flex-wrap items-center gap-8 bg-white p-8 border border-slate-200 shadow-sm relative overflow-hidden group"
               >
                 <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 group-hover:bg-blue-600 transition-all" />
@@ -243,7 +238,7 @@ export const IntradayView: React.FC = () => {
                   <div className="text-4xl font-black text-slate-900 italic tracking-tighter uppercase mb-3">{symbol}</div>
                   <div className={`text-xs font-bold flex items-center gap-3 italic uppercase tracking-widest ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                     {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                    {isPositive ? 'Gain' : 'Loss'} {isPositive ? '+' : ''}{stats.change_pct}%
+                    {isPositive ? 'Gain' : 'Loss'} {isPositive ? '+' : ''}{stats.change_pct ?? 0}%
                   </div>
                 </div>
 
@@ -252,19 +247,19 @@ export const IntradayView: React.FC = () => {
                 <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-10">
                   <div className="space-y-2">
                     <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest italic flex items-center gap-2">Day Open</div>
-                    <div className="text-lg font-sans text-slate-900 font-black italic">₹{stats.day_open?.toLocaleString('en-IN')}</div>
+                    <div className="text-lg font-sans text-slate-900 font-black italic">₹{stats.day_open != null ? stats.day_open.toLocaleString('en-IN') : '—'}</div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-[10px] text-green-600 opacity-60 uppercase font-bold tracking-widest italic flex items-center gap-2">Day High</div>
-                    <div className="text-lg font-sans text-green-600 font-black italic">₹{stats.day_high?.toLocaleString('en-IN')}</div>
+                    <div className="text-lg font-sans text-green-600 font-black italic">₹{stats.day_high != null ? stats.day_high.toLocaleString('en-IN') : '—'}</div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-[10px] text-red-600 opacity-60 uppercase font-bold tracking-widest italic flex items-center gap-2">Day Low</div>
-                    <div className="text-lg font-sans text-red-600 font-black italic">₹{stats.day_low?.toLocaleString('en-IN')}</div>
+                    <div className="text-lg font-sans text-red-600 font-black italic">₹{stats.day_low != null ? stats.day_low.toLocaleString('en-IN') : '—'}</div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest italic flex items-center gap-2">Last Price</div>
-                    <div className="text-lg font-sans text-slate-900 font-black italic">₹{stats.ltp?.toLocaleString('en-IN')}</div>
+                    <div className="text-lg font-sans text-slate-900 font-black italic">₹{stats.ltp != null ? stats.ltp.toLocaleString('en-IN') : '—'}</div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest italic flex items-center gap-2"><BarChart3 size={12} className="text-blue-600" /> Vol (M)</div>
@@ -273,9 +268,8 @@ export const IntradayView: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
 
           {/* Chart Console */}
           <div className="flex-1 bg-white border border-slate-200 p-6 relative min-h-[500px] shadow-sm overflow-hidden group">

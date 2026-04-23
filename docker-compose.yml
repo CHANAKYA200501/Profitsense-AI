@@ -32,6 +32,30 @@ services:
       - qdrantdata:/qdrant/storage
     restart: unless-stopped
 
+  backend:
+    build: ./backend
+    container_name: profitsense_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://etmind:etmindpassword@db:5432/etmind
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      - db
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: profitsense_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:

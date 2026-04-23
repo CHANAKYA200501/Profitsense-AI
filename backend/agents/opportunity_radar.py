@@ -1,7 +1,7 @@
 import random
 import uuid
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import List, Dict
 from data.nse_fetcher import NewsClient, NSEClient
 

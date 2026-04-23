@@ -5,7 +5,6 @@ import mlflow
 import mlflow.lightgbm
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import roc_auc_score
-import optuna
 
 class EarningsSurprisePredictor:
     """

@@ -96,32 +96,35 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 20 }}
-        className="bg-gray-950 border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl shadow-indigo-500/10"
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="bg-white border border-slate-200 w-full max-w-md overflow-hidden shadow-2xl relative"
       >
+        {/* Top Accent */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-600" />
+
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-900/60 to-purple-900/40 px-6 py-4 flex items-center justify-between border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-              <Zap size={16} className="text-indigo-400" />
+        <div className="px-8 py-5 flex items-center justify-between border-b border-slate-100">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+              <Zap size={18} className="text-blue-600" />
             </div>
             <div>
-              <div className="text-white font-bold text-sm tracking-wide">ProfitSense AI Pay</div>
-              <div className="text-gray-400 text-[10px] uppercase tracking-wider">Secure Wallet Top-Up</div>
+              <div className="text-slate-900 font-black text-sm tracking-tighter uppercase italic">ProfitSense Pay</div>
+              <div className="text-[9px] text-blue-600 uppercase tracking-widest font-bold">Secure Wallet Top-Up</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-full">
+            <div className="flex items-center gap-1.5 text-[9px] text-green-600 bg-green-50 border border-green-100 px-2.5 py-1 font-bold uppercase tracking-widest">
               <Lock size={10} /> 256-bit SSL
             </div>
             {step !== 'processing' && step !== 'success' && (
-              <button onClick={onClose} className="text-gray-500 hover:text-white transition">
+              <button onClick={onClose} className="text-slate-300 hover:text-slate-600 transition">
                 <X size={18} />
               </button>
             )}
@@ -130,17 +133,17 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
 
         {/* Amount Display */}
         {step !== 'success' && (
-          <div className="px-6 pt-5 pb-3">
-            <div className="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Amount to Add</div>
-            <div className="flex flex-wrap gap-2 mb-3">
+          <div className="px-8 pt-6 pb-4">
+            <div className="text-[9px] text-slate-400 uppercase font-bold mb-3 tracking-widest italic">Amount to Add</div>
+            <div className="flex flex-wrap gap-2 mb-4">
               {PRESET_AMOUNTS.map((p) => (
                 <button
                   key={p}
                   onClick={() => { setAmount(p); setCustomAmount(''); }}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${
+                  className={`px-4 py-2 text-[9px] font-bold uppercase tracking-widest transition-all border ${
                     amount === p && !customAmount
-                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
-                      : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-600'
+                      ? 'bg-blue-50 text-blue-600 border-blue-600 shadow-sm'
+                      : 'bg-white text-slate-400 border-slate-100 hover:border-blue-600 hover:text-blue-600'
                   }`}
                 >
                   ₹{(p / 1000).toFixed(0)}K
@@ -148,18 +151,18 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
               ))}
             </div>
             <div className="relative">
-              <IndianRupee size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <IndianRupee size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="number"
                 placeholder="Custom amount"
                 value={customAmount}
                 onChange={(e) => { setCustomAmount(e.target.value); setAmount(0); }}
-                className="w-full pl-7 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition"
+                className="w-full pl-10 pr-6 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold focus:outline-none focus:border-blue-600 transition-all italic"
               />
             </div>
             {effectiveAmount > 0 && (
-              <div className="mt-2 text-center">
-                <span className="text-2xl font-black text-white">
+              <div className="mt-4 text-center">
+                <span className="text-3xl font-black text-slate-900 tracking-tighter italic">
                   ₹{effectiveAmount.toLocaleString('en-IN')}
                 </span>
               </div>
@@ -167,39 +170,39 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
           </div>
         )}
 
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-8">
           <AnimatePresence mode="wait">
 
             {/* Step 1: Method Selection */}
             {step === 'select_method' && (
               <motion.div key="method" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="text-xs text-gray-500 uppercase font-bold mb-3 tracking-wider">Choose Payment Method</div>
-                <div className="space-y-2">
+                <div className="text-[9px] text-slate-400 uppercase font-bold mb-4 tracking-widest italic">Choose Payment Method</div>
+                <div className="space-y-3">
                   {[
-                    { id: 'UPI', label: 'UPI', sub: 'GPay, PhonePe, BHIM, Paytm', icon: <Smartphone size={18} className="text-green-400" />, badge: 'Instant' },
-                    { id: 'CARD', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay', icon: <CreditCard size={18} className="text-blue-400" />, badge: 'Secure' },
-                    { id: 'NETBANKING', label: 'Net Banking', sub: 'All major banks supported', icon: <Building2 size={18} className="text-amber-400" />, badge: '' },
+                    { id: 'UPI', label: 'UPI', sub: 'GPay, PhonePe, BHIM, Paytm', icon: <Smartphone size={18} className="text-green-600" />, badge: 'Instant' },
+                    { id: 'CARD', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay', icon: <CreditCard size={18} className="text-blue-600" />, badge: 'Secure' },
+                    { id: 'NETBANKING', label: 'Net Banking', sub: 'All major banks supported', icon: <Building2 size={18} className="text-slate-600" />, badge: '' },
                   ].map((m) => (
                     <button
                       key={m.id}
                       onClick={() => handleMethodSelect(m.id as PayMethod)}
-                      className="w-full flex items-center gap-3 p-3.5 bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 rounded-xl transition group"
+                      className="w-full flex items-center gap-4 p-5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-600 transition-all group"
                     >
-                      <div className="w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center">
+                      <div className="w-10 h-10 bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm">
                         {m.icon}
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="text-sm font-semibold text-white flex items-center gap-2">
+                        <div className="text-sm font-black text-slate-900 flex items-center gap-3 tracking-tighter uppercase italic">
                           {m.label}
                           {m.badge && (
-                            <span className="text-[9px] bg-green-500/15 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded font-bold uppercase">
+                            <span className="text-[8px] bg-green-50 text-green-600 border border-green-100 px-2 py-0.5 font-bold uppercase tracking-widest">
                               {m.badge}
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500">{m.sub}</div>
+                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">{m.sub}</div>
                       </div>
-                      <ChevronRight size={16} className="text-gray-600 group-hover:text-gray-400 transition" />
+                      <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 transition" />
                     </button>
                   ))}
                 </div>
@@ -209,47 +212,47 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
             {/* Step 2: Enter Details */}
             {step === 'enter_details' && (
               <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <button onClick={() => setStep('select_method')} className="text-xs text-indigo-400 hover:text-indigo-300 mb-4 flex items-center gap-1 transition">
+                <button onClick={() => setStep('select_method')} className="text-[10px] text-blue-600 hover:text-blue-700 mb-5 flex items-center gap-2 transition font-bold uppercase tracking-widest italic">
                   ← Back
                 </button>
 
                 {method === 'UPI' && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <label className="text-xs text-gray-500 uppercase font-bold mb-1.5 block">UPI ID</label>
+                      <label className="text-[9px] text-slate-400 uppercase font-bold mb-2 block tracking-widest italic">UPI ID</label>
                       <input
                         type="text"
                         placeholder="yourname@upi"
                         value={upiId}
                         onChange={(e) => setUpiId(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-green-500 transition"
+                        className="w-full px-5 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold focus:outline-none focus:border-blue-600 transition-all italic"
                       />
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {['@okaxis', '@oksbi', '@okhdfcbank', '@ybl', '@paytm'].map((vpa) => (
                         <button key={vpa} onClick={() => setUpiId(prev => prev.split('@')[0] + vpa)}
-                          className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded border border-gray-700 hover:border-green-500/50 hover:text-green-400 transition">
+                          className="px-3 py-1.5 bg-white text-slate-400 text-[9px] font-bold border border-slate-100 hover:border-blue-600 hover:text-blue-600 transition-all uppercase tracking-widest">
                           {vpa}
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-600 flex items-center gap-1">
-                      <Shield size={10} /> A payment request will be sent to your UPI app.
+                    <p className="text-[9px] text-slate-400 flex items-center gap-2 font-bold uppercase tracking-widest italic">
+                      <Shield size={10} className="text-blue-600" /> A payment request will be sent to your UPI app.
                     </p>
                   </div>
                 )}
 
                 {method === 'CARD' && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {/* Card Preview */}
-                    <div className="bg-gradient-to-br from-indigo-800 to-purple-900 rounded-xl p-4 h-28 relative overflow-hidden mb-4">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mt-6" />
-                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full -ml-4 -mb-4" />
+                    <div className="bg-slate-900 p-6 h-32 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/10 rounded-full -mr-6 -mt-6" />
+                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-600/10 rounded-full -ml-4 -mb-4" />
                       <div className="relative z-10">
-                        <div className="text-gray-300 font-mono text-sm tracking-widest">
+                        <div className="text-slate-300 font-mono text-sm tracking-widest">
                           {cardNum || '•••• •••• •••• ••••'}
                         </div>
-                        <div className="flex justify-between mt-3 text-xs text-gray-400">
+                        <div className="flex justify-between mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                           <span className="truncate max-w-[140px]">{cardName || 'CARDHOLDER NAME'}</span>
                           <span>{cardExpiry || 'MM/YY'}</span>
                         </div>
@@ -258,41 +261,41 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
                     <input
                       type="text" placeholder="Card Number" maxLength={19}
                       value={cardNum} onChange={(e) => setCardNum(formatCard(e.target.value))}
-                      className="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-blue-500 transition"
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-blue-600 transition-all"
                     />
                     <input
                       type="text" placeholder="Name on Card"
                       value={cardName} onChange={(e) => setCardName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition"
+                      className="w-full px-5 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold focus:outline-none focus:border-blue-600 transition-all italic"
                     />
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text" placeholder="MM/YY" maxLength={5}
                         value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                        className="px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-blue-500 transition"
+                        className="px-5 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-blue-600 transition-all"
                       />
                       <input
                         type="password" placeholder="CVV" maxLength={4}
                         value={cardCvv} onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        className="px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:border-blue-500 transition"
+                        className="px-5 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-blue-600 transition-all"
                       />
                     </div>
                   </div>
                 )}
 
                 {method === 'NETBANKING' && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <label className="text-xs text-gray-500 uppercase font-bold mb-1.5 block">Select Bank</label>
-                      <div className="space-y-1.5">
+                      <label className="text-[9px] text-slate-400 uppercase font-bold mb-3 block tracking-widest italic">Select Bank</label>
+                      <div className="space-y-2">
                         {BANKS.map((b) => (
                           <button
                             key={b}
                             onClick={() => setSelectedBank(b)}
-                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition border ${
+                            className={`w-full text-left px-5 py-3 text-xs transition-all border font-bold uppercase italic ${
                               selectedBank === b
-                                ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                                : 'bg-gray-900 text-gray-400 border-gray-700 hover:border-gray-600'
+                                ? 'bg-blue-50 text-blue-600 border-blue-600 shadow-sm'
+                                : 'bg-white text-slate-400 border-slate-100 hover:border-blue-600 hover:text-blue-600'
                             }`}
                           >
                             {b}
@@ -311,42 +314,42 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
                     (method === 'CARD' && (cardNum.length < 19 || cardExpiry.length < 5 || cardCvv.length < 3)) ||
                     (method === 'NETBANKING' && !selectedBank)
                   }
-                  className="w-full mt-5 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
+                  className="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black text-[10px] uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-md italic"
                 >
                   <Lock size={14} />
                   Pay ₹{effectiveAmount.toLocaleString('en-IN')} Securely
                 </button>
 
-                <p className="text-center text-[10px] text-gray-600 mt-2">
-                  Your payment info is protected with bank-grade 256-bit encryption
+                <p className="text-center text-[9px] text-slate-400 mt-3 font-bold uppercase tracking-widest italic">
+                  Protected with bank-grade 256-bit encryption
                 </p>
               </motion.div>
             )}
 
             {/* Step 3: Processing */}
             {step === 'processing' && (
-              <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-6 text-center">
-                <div className="relative w-20 h-20 mx-auto mb-5">
-                  <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20" />
+              <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-8 text-center">
+                <div className="relative w-20 h-20 mx-auto mb-6">
+                  <div className="absolute inset-0 border-2 border-slate-100" />
                   <div
-                    className="absolute inset-0 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"
+                    className="absolute inset-0 border-2 border-blue-600 border-t-transparent animate-spin"
                     style={{ animationDuration: '0.8s' }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 size={28} className="text-indigo-400 animate-spin" style={{ animationDuration: '1.2s' }} />
+                    <Loader2 size={28} className="text-blue-600 animate-spin" style={{ animationDuration: '1.2s' }} />
                   </div>
                 </div>
-                <div className="text-white font-semibold text-sm mb-1">{processingMsg}</div>
-                <div className="text-gray-500 text-xs mb-4">Do not close this window</div>
+                <div className="text-slate-900 font-bold text-sm uppercase tracking-widest italic mb-2">{processingMsg}</div>
+                <div className="text-slate-400 text-[10px] uppercase tracking-widest font-bold mb-6 italic">Do not close this window</div>
                 {/* Progress bar */}
-                <div className="w-full bg-gray-800 rounded-full h-1.5">
+                <div className="w-full bg-slate-100 h-1.5 border border-slate-200 overflow-hidden">
                   <motion.div
-                    className="h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                    className="h-full bg-blue-600"
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.5 }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-gray-600 font-mono">{progress}%</div>
+                <div className="mt-3 text-[10px] text-slate-400 font-black tracking-widest">{progress}%</div>
               </motion.div>
             )}
 
@@ -354,37 +357,37 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
             {step === 'success' && (
               <motion.div
                 key="success"
-                initial={{ opacity: 0, scale: 0.85 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="py-8 text-center"
+                className="py-10 text-center"
               >
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-                  className="w-20 h-20 rounded-full bg-green-500/15 border-2 border-green-500/40 flex items-center justify-center mx-auto mb-5"
+                  className="w-20 h-20 bg-green-50 border-2 border-green-200 flex items-center justify-center mx-auto mb-6 shadow-sm"
                 >
-                  <CheckCircle2 size={40} className="text-green-400" />
+                  <CheckCircle2 size={40} className="text-green-600" />
                 </motion.div>
-                <div className="text-2xl font-black text-green-400 mb-1">
+                <div className="text-3xl font-black text-green-600 mb-2 tracking-tighter italic">
                   ₹{effectiveAmount.toLocaleString('en-IN')} Added!
                 </div>
-                <div className="text-gray-400 text-sm">Your ProfitSense AI wallet has been credited.</div>
-                <div className="text-gray-600 text-xs mt-2">Returning to terminal...</div>
+                <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">Your ProfitSense AI wallet has been credited.</div>
+                <div className="text-slate-400 text-[9px] mt-3 uppercase tracking-widest font-bold italic">Returning to terminal...</div>
               </motion.div>
             )}
 
             {/* Step 5: Failed */}
             {step === 'failed' && (
-              <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-red-500/15 border-2 border-red-500/30 flex items-center justify-center mx-auto mb-4">
-                  <X size={28} className="text-red-400" />
+              <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-8 text-center">
+                <div className="w-16 h-16 bg-red-50 border-2 border-red-200 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <X size={28} className="text-red-600" />
                 </div>
-                <div className="text-red-400 font-bold mb-1">Payment Failed</div>
-                <div className="text-gray-500 text-sm mb-5">{errorMsg}</div>
+                <div className="text-red-600 font-black uppercase tracking-widest text-sm mb-2 italic">Payment Failed</div>
+                <div className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-6 italic">{errorMsg}</div>
                 <button
                   onClick={() => setStep('select_method')}
-                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition"
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.3em] transition-all shadow-md italic"
                 >
                   Try Again
                 </button>
@@ -396,9 +399,9 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ onClose, onSucce
 
         {/* Footer */}
         {step !== 'processing' && step !== 'success' && (
-          <div className="border-t border-gray-800 px-6 py-3 flex items-center justify-center gap-4">
+          <div className="border-t border-slate-100 px-8 py-3 flex items-center justify-center gap-4">
             {['RuPay', 'VISA', 'Mastercard', 'UPI', 'BHIM'].map((brand) => (
-              <span key={brand} className="text-[10px] text-gray-600 font-bold tracking-wider border border-gray-800 px-1.5 py-0.5 rounded">
+              <span key={brand} className="text-[9px] text-slate-300 font-bold tracking-widest border border-slate-100 px-2 py-0.5 uppercase">
                 {brand}
               </span>
             ))}

@@ -4,12 +4,13 @@ All routes require a valid Supabase JWT in the Authorization header.
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Optional
-import os, time, json
+import os
+import time
 from datetime import datetime
 
 # Import shared in-memory stores and DB helpers
-from api.paper_trading import PAPER_TRADES, DEMO_CASH_BALANCE
-from .db import get_users, save_users, find_user_by_email
+from .trade_db import get_trades, save_trades, get_balance, save_balance
+from .db import get_users, save_users
 
 router = APIRouter()
 
@@ -66,18 +67,19 @@ async def get_stats(token: str = Depends(get_admin_token)):
     hours, rem = divmod(uptime_secs, 3600)
     mins, secs = divmod(rem, 60)
 
-    open_trades = [t for t in PAPER_TRADES if t.get("status") == "OPEN"]
-    total_pnl = sum(t.get("profit_loss", 0) for t in PAPER_TRADES)
+    trades = get_trades()
+    open_trades = [t for t in trades if t.get("status") == "OPEN"]
+    total_pnl = sum(t.get("profit_loss", 0) for t in trades)
 
     return {
         "status": "success",
         "stats": {
             "uptime": f"{hours}h {mins}m {secs}s",
             "total_signals": len(_ADMIN_SIGNALS_REF),
-            "total_trades": len(PAPER_TRADES),
+            "total_trades": len(trades),
             "open_trades": len(open_trades),
             "total_pnl": round(total_pnl, 2),
-            "demo_cash": round(DEMO_CASH_BALANCE, 2),
+            "demo_cash": round(get_balance(), 2),
             "activity_events": len(_ACTIVITY_LOG),
         },
     }
@@ -100,7 +102,6 @@ async def list_signals(
 
 @router.delete("/signals/{signal_id}")
 async def delete_signal(signal_id: str, token: str = Depends(get_admin_token)):
-    global _ADMIN_SIGNALS_REF
     before = len(_ADMIN_SIGNALS_REF)
     _ADMIN_SIGNALS_REF[:] = [s for s in _ADMIN_SIGNALS_REF if s.get("id") != signal_id]
     after = len(_ADMIN_SIGNALS_REF)
@@ -121,21 +122,23 @@ async def clear_all_signals(token: str = Depends(get_admin_token)):
 @router.get("/trades")
 async def list_trades(token: str = Depends(get_admin_token)):
     import random
-    trades = []
-    for t in PAPER_TRADES:
+    trades_list = []
+    for t in get_trades():
         trade = dict(t)
         if trade.get("status") == "OPEN":
             variance = random.uniform(-0.02, 0.03)
             trade["profit_loss"] = round((trade["entry_price"] * variance) * trade["quantity"], 2)
-        trades.append(trade)
-    return {"status": "success", "count": len(trades), "trades": trades}
+        trades_list.append(trade)
+    return {"status": "success", "count": len(trades_list), "trades": trades_list}
 
 
 @router.delete("/trades/{trade_id}")
 async def close_trade(trade_id: str, token: str = Depends(get_admin_token)):
-    for t in PAPER_TRADES:
+    trades = get_trades()
+    for t in trades:
         if t.get("id") == trade_id:
             t["status"] = "CLOSED"
+            save_trades(trades)
             log_activity("trade_closed", f"id={trade_id}")
             return {"status": "success", "message": f"Trade {trade_id} closed"}
     raise HTTPException(status_code=404, detail="Trade not found")
@@ -195,8 +198,7 @@ async def delete_user(user_id: str, token: str = Depends(get_admin_token)):
 @router.post("/reset-demo-balance")
 async def reset_demo_balance(token: str = Depends(get_admin_token)):
     """Reset demo cash balance back to ₹10 Lakh."""
-    import api.paper_trading as pt
-    pt.DEMO_CASH_BALANCE = 1000000.0
-    PAPER_TRADES.clear()
+    save_balance(1000000.0)
+    save_trades([])
     log_activity("demo_reset", "Balance reset to ₹10,00,000 and all trades cleared")
     return {"status": "success", "message": "Demo balance reset to ₹10,00,000", "new_balance": 1000000.0}

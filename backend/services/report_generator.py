@@ -4,8 +4,8 @@ Aggregates OHLCV data, computes technical indicators, and generates AI insights.
 """
 import yfinance as yf
 import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class MarketReportGenerator:
     """Generates comprehensive daily reports for NIFTY 50 and BSE SENSEX."""
@@ -17,26 +17,24 @@ class MarketReportGenerator:
 
     NIFTY_50_CONSTITUENTS = [
         'RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'ICICIBANK.NS',
-        'HINDUNILVR.NS', 'ITC.NS', 'SBIN.NS', 'BHARTIARTL.NS', 'KOTAKBANK.NS',
-        'LT.NS', 'AXISBANK.NS', 'BAJFINANCE.NS', 'ASIANPAINT.NS', 'MARUTI.NS',
-        'TITAN.NS', 'SUNPHARMA.NS', 'ULTRACEMCO.NS', 'NESTLEIND.NS', 'WIPRO.NS',
-        'HCLTECH.NS', 'BAJAJFINSV.NS', 'POWERGRID.NS', 'NTPC.NS', 'TATAMOTORS.NS',
-        'ADANIENT.NS', 'ADANIPORTS.NS', 'GRASIM.NS', 'DIVISLAB.NS', 'DRREDDY.NS',
-        'CIPLA.NS', 'APOLLOHOSP.NS', 'EICHERMOT.NS', 'JSWSTEEL.NS', 'TATASTEEL.NS',
-        'M&M.NS', 'TATACONSUM.NS', 'COALINDIA.NS', 'ONGC.NS', 'BPCL.NS',
-        'HEROMOTOCO.NS', 'TECHM.NS', 'BRITANNIA.NS', 'INDUSINDBK.NS', 'HINDALCO.NS',
-        'BAJAJ-AUTO.NS', 'SBILIFE.NS', 'HDFCLIFE.NS', 'UPL.NS', 'SHRIRAMFIN.NS',
+        'HINDUNILVR.NS', 'ITC.NS', 'SBIN.NS', 'KOTAKBANK.NS',
+        'LT.NS', 'AXISBANK.NS', 'MARUTI.NS',
+        'SUNPHARMA.NS', 'WIPRO.NS',
+        'HCLTECH.NS', 'NTPC.NS', 'TATAMOTORS.NS',
+        'ADANIENT.NS', 'DRREDDY.NS',
+        'JSWSTEEL.NS', 'TATASTEEL.NS',
+        'COALINDIA.NS', 'ONGC.NS', 'TECHM.NS', 'HINDALCO.NS',
     ]
 
     SECTOR_MAP = {
-        'Banking': ['HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'KOTAKBANK.NS', 'AXISBANK.NS', 'INDUSINDBK.NS'],
-        'IT': ['TCS.NS', 'INFY.NS', 'WIPRO.NS', 'HCLTECH.NS', 'TECHM.NS'],
-        'Auto': ['MARUTI.NS', 'TATAMOTORS.NS', 'M&M.NS', 'EICHERMOT.NS', 'BAJAJ-AUTO.NS', 'HEROMOTOCO.NS'],
-        'Pharma': ['SUNPHARMA.NS', 'DRREDDY.NS', 'CIPLA.NS', 'DIVISLAB.NS', 'APOLLOHOSP.NS'],
-        'Energy': ['RELIANCE.NS', 'NTPC.NS', 'POWERGRID.NS', 'ONGC.NS', 'BPCL.NS', 'COALINDIA.NS', 'ADANIENT.NS'],
-        'FMCG': ['HINDUNILVR.NS', 'ITC.NS', 'NESTLEIND.NS', 'BRITANNIA.NS', 'TATACONSUM.NS'],
-        'Metals': ['TATASTEEL.NS', 'JSWSTEEL.NS', 'HINDALCO.NS'],
-        'Infra': ['LT.NS', 'ULTRACEMCO.NS', 'GRASIM.NS', 'ADANIPORTS.NS'],
+        'Banking':  ['HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'KOTAKBANK.NS', 'AXISBANK.NS'],
+        'IT':       ['TCS.NS', 'INFY.NS', 'WIPRO.NS', 'HCLTECH.NS', 'TECHM.NS'],
+        'Auto':     ['MARUTI.NS', 'TATAMOTORS.NS'],
+        'Pharma':   ['SUNPHARMA.NS', 'DRREDDY.NS'],
+        'Energy':   ['RELIANCE.NS', 'NTPC.NS', 'ONGC.NS', 'COALINDIA.NS', 'ADANIENT.NS'],
+        'FMCG':     ['HINDUNILVR.NS', 'ITC.NS'],
+        'Metals':   ['TATASTEEL.NS', 'JSWSTEEL.NS', 'HINDALCO.NS'],
+        'Infra':    ['LT.NS'],
     }
 
     _cache = {}
@@ -117,23 +115,45 @@ class MarketReportGenerator:
                 'trend': trend,
             }
 
-        # 2. Bulk Fetch Constituents for Sectors and Ranking
+        # 2. Fetch Constituents for Sectors and Ranking (parallel)
         all_tickers = self.NIFTY_50_CONSTITUENTS
         try:
-            bulk_data = yf.download(all_tickers, period='2d', group_by='ticker', silent=True)
-            
-            # Gainers / Losers
-            gl_results = []
-            for sym in all_tickers:
+            ticker_changes = {}  # sym -> {'price': float, 'change_pct': float, 'volume': int}
+
+            def _fetch_one(sym: str):
+                """Fetch a single ticker's 5-day history and compute change."""
                 try:
-                    ticker_df = bulk_data[sym]
-                    if not ticker_df.empty and len(ticker_df) >= 2:
-                        prev = float(ticker_df['Close'].iloc[-2])
-                        curr = float(ticker_df['Close'].iloc[-1])
-                        pct = round(((curr - prev) / prev) * 100, 2)
-                        gl_results.append({'symbol': sym.replace('.NS', ''), 'price': round(curr, 2), 'change_pct': pct})
-                except Exception: continue
-            
+                    hist = yf.Ticker(sym).history(period='5d')
+                    if hist.empty or len(hist) < 2:
+                        return None
+                    hist = hist.dropna(subset=['Close'])
+                    if len(hist) < 2:
+                        return None
+                    prev = float(hist['Close'].iloc[-2])
+                    curr = float(hist['Close'].iloc[-1])
+                    if prev == 0:
+                        return None
+                    pct = round(((curr - prev) / prev) * 100, 2)
+                    vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0
+                    return (sym, {'price': round(curr, 2), 'change_pct': pct, 'volume': vol})
+                except Exception:
+                    return None
+
+            # Run all fetches in parallel with 10 threads
+            with ThreadPoolExecutor(max_workers=10) as pool:
+                futures = {pool.submit(_fetch_one, sym): sym for sym in all_tickers}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        ticker_changes[result[0]] = result[1]
+
+            print(f"[ReportGen] Fetched {len(ticker_changes)}/{len(all_tickers)} tickers successfully.")
+
+            # Gainers / Losers
+            gl_results = [
+                {'symbol': sym.replace('.NS', ''), 'price': data['price'], 'change_pct': data['change_pct']}
+                for sym, data in ticker_changes.items()
+            ]
             gl_results.sort(key=lambda x: x['change_pct'], reverse=True)
             gainers = gl_results[:5]
             losers = gl_results[-5:]
@@ -141,30 +161,21 @@ class MarketReportGenerator:
             # Sector Performance
             sector_scores = {}
             for sector, tickers in self.SECTOR_MAP.items():
-                changes = []
-                for sym in tickers:
-                    try:
-                        ticker_df = bulk_data[sym]
-                        if not ticker_df.empty and len(ticker_df) >= 2:
-                            prev = float(ticker_df['Close'].iloc[-2])
-                            curr = float(ticker_df['Close'].iloc[-1])
-                            changes.append(((curr - prev) / prev) * 100)
-                    except Exception: continue
+                changes = [ticker_changes[sym]['change_pct'] for sym in tickers if sym in ticker_changes]
                 if changes:
                     sector_scores[sector] = round(sum(changes) / len(changes), 2)
-            
+
             sectors = dict(sorted(sector_scores.items(), key=lambda x: x[1], reverse=True))
-            
+
             # Aggregated volume (estimate from top 20)
-            agg_volume = 0
-            for sym in all_tickers[:20]:
-                try:
-                    ticker_df = bulk_data[sym]
-                    if not ticker_df.empty:
-                        agg_volume += int(ticker_df['Volume'].iloc[-1])
-                except Exception: continue
+            agg_volume = sum(
+                ticker_changes[sym]['volume']
+                for sym in all_tickers[:20]
+                if sym in ticker_changes
+            )
 
         except Exception as e:
+            print(f"[ReportGen] Constituent fetch failed: {e}")
             gainers, losers, sectors, agg_volume = [], [], {}, 0
 
         # 3. AI Insight Synthesis

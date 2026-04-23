@@ -1,0 +1,17 @@
+[
+  {
+    "id": "e5e51ff2-c98f-42b1-a32e-f6cd306fce7e",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "document_type": "national_id",
+    "document_s3_key": "kyc_e0278fc5-c72b-404b-856a-f5d616e4fb59_0e1bf820.jpg",
+    "personal_info": {
+      "full_name": "Tushar Sharma",
+      "document_number": ""
+    },
+    "status": "approved",
+    "rejection_reason": null,
+    "reviewed_by": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "reviewed_at": "2026-04-23T07:34:08.104769",
+    "submitted_at": "2026-04-23T07:20:38.074445"
+  }
+]

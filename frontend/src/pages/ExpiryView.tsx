@@ -90,7 +90,7 @@ export const ExpiryView: React.FC = () => {
 
       <div className="max-w-6xl mx-auto p-12 space-y-12 relative z-10">
         {/* Header - Expiry Analysis */}
-        <div className="hacker-panel bg-white border border-slate-200 p-10 relative overflow-hidden group shadow-sm">
+        <div className="bg-white border border-slate-200 p-10 relative overflow-hidden group shadow-sm">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-600 opacity-10 group-hover:opacity-100 transition-opacity" />
           
           <div className="flex items-center justify-between">
@@ -171,7 +171,7 @@ export const ExpiryView: React.FC = () => {
         </div>
 
         {/* OI_SIGNAL_MATRIX */}
-        <div className="hacker-panel bg-white border border-slate-200 p-10 relative group shadow-sm">
+        <div className="bg-white border border-slate-200 p-10 relative group shadow-sm">
           <div className="absolute top-0 right-0 w-1 h-full bg-slate-100 group-hover:bg-blue-600 transition-all" />
           <h3 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-12 flex items-center gap-6 italic">
             <BarChart3 size={18} className="text-blue-600" /> 

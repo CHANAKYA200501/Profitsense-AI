@@ -523,18 +523,26 @@ export const AdminPanel: React.FC = () => {
               <div className="text-[10px] text-indigo-400 font-bold uppercase">{user?.role}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => { window.history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')); }}
-              className="flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-white hover:bg-gray-800/60 border border-gray-700 transition"
-              title="Return to Terminal"
+          <div className="flex flex-col gap-2">
+            <button onClick={() => { window.history.pushState({}, '', '/portal/admin'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+              className="flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold text-indigo-400 hover:text-white hover:bg-indigo-500/20 border border-indigo-500/30 transition shadow-sm uppercase tracking-wider"
+              title="Security Portal"
             >
-              Terminal
+              <Shield className="w-3 h-3" /> Security Portal
             </button>
-            <button onClick={logout}
-              className="flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-gray-700 hover:border-red-500/30 transition"
-            >
-              Sign Out
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { window.history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+                className="flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-white hover:bg-gray-800/60 border border-gray-700 transition uppercase tracking-wider"
+                title="Return to Terminal"
+              >
+                Terminal
+              </button>
+              <button onClick={logout}
+                className="flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-gray-700 hover:border-red-500/30 transition uppercase tracking-wider"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>

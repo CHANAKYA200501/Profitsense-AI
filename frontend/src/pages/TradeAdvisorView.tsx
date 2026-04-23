@@ -137,10 +137,10 @@ export const TradeAdvisorView: React.FC = () => {
   const decisionColor = decision?.decision === 'BUY MORE' ? 'green'
     : decision?.decision === 'SELL' ? 'red' : 'yellow';
   const decisionGradient = decision?.decision === 'BUY MORE'
-    ? 'from-green-500/10 to-transparent border-green-500/40'
+    ? 'bg-green-50 border-green-200'
     : decision?.decision === 'SELL'
-    ? 'from-[#ff0000]/10 to-transparent border-[#ff0000]/40'
-    : 'from-yellow-500/10 to-transparent border-yellow-500/40';
+    ? 'bg-red-50 border-red-200'
+    : 'bg-yellow-50 border-yellow-200';
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#f8fafc] text-slate-900 font-sans relative">
@@ -348,7 +348,7 @@ export const TradeAdvisorView: React.FC = () => {
                   </div>
 
                   {/* AI Verdict */}
-                  <div className={`lg:col-span-2 bg-white p-10 border relative overflow-hidden group shadow-sm ${decisionGradient.replace('from-green-500/10', 'bg-green-50 border-green-200').replace('from-[#ff0000]/10', 'bg-red-50 border-red-200').replace('from-yellow-500/10', 'bg-yellow-50 border-yellow-200')}`}>
+                  <div className={`lg:col-span-2 bg-white p-10 border relative overflow-hidden group shadow-sm ${decisionGradient}`}>
                     <div className="relative z-10 flex flex-col h-full">
                       <div className="flex items-start justify-between mb-12">
                         <div>
@@ -398,17 +398,17 @@ export const TradeAdvisorView: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
                   {/* Technical Pulse Station */}
-                  <div className="hacker-panel p-10 sharp-corner border border-[#ff0000]/20 bg-black relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff0000]/5 rounded-full blur-3xl pointer-events-none" />
-                    <h3 className="text-[10px] font-black text-[#ff0000] uppercase tracking-[0.4em] mb-8 flex items-center gap-4 italic italic">
-                      <div className="w-2 h-2 bg-[#ff0000] animate-flicker" />
-                      TECHNICAL_PULSE_ARRAY
+                  <div className="bg-white p-10 border border-slate-200 relative overflow-hidden group shadow-sm">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 group-hover:bg-blue-600 transition-all" />
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-4 italic">
+                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                      Technical Pulse
                     </h3>
                     <div className="space-y-2">
-                       <TechIndicator label="RSI_DAILY_VECTOR" value={tech?.rsi?.toFixed(1) || '0.0'} signal={tech?.rsi < 30 ? 'bullish' : tech?.rsi > 70 ? 'bearish' : 'neutral'} />
-                       <TechIndicator label="MACD_TREND_BREADTH" value={tech?.macd || '0.00'} signal={tech?.macd_signal === 'BUY' ? 'bullish' : tech?.macd_signal === 'SELL' ? 'bearish' : 'neutral'} />
-                       <TechIndicator label="MOVING_AVG_CONSENSUS" value={tech?.ma_trend || 'NEUTRAL'} signal={tech?.ma_trend === 'BULLISH' ? 'bullish' : tech?.ma_trend === 'BEARISH' ? 'bearish' : 'neutral'} />
-                       <TechIndicator label="VOLATILITY_TELEMETRY" value={tech?.volatility === 'HIGH' ? 'EXTREME' : 'STABLE'} signal={tech?.volatility === 'HIGH' ? 'bearish' : 'neutral'} />
+                       <TechIndicator label="RSI (Daily)" value={tech?.rsi?.toFixed(1) || '0.0'} signal={tech?.rsi < 30 ? 'bullish' : tech?.rsi > 70 ? 'bearish' : 'neutral'} />
+                       <TechIndicator label="MACD Signal" value={tech?.macd || '0.00'} signal={tech?.macd_signal === 'BUY' ? 'bullish' : tech?.macd_signal === 'SELL' ? 'bearish' : 'neutral'} />
+                       <TechIndicator label="Moving Avg Trend" value={tech?.ma_trend || 'NEUTRAL'} signal={tech?.ma_trend === 'BULLISH' ? 'bullish' : tech?.ma_trend === 'BEARISH' ? 'bearish' : 'neutral'} />
+                       <TechIndicator label="Volatility Index" value={tech?.volatility === 'HIGH' ? 'EXTREME' : 'STABLE'} signal={tech?.volatility === 'HIGH' ? 'bearish' : 'neutral'} />
                     </div>
                   </div>
 

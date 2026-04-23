@@ -5,7 +5,7 @@ import mlflow.xgboost
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.metrics import roc_auc_score, precision_score, recall_score
+from sklearn.metrics import roc_auc_score, precision_score
 from sklearn.preprocessing import RobustScaler
 import shap
 import pickle

@@ -14,14 +14,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  if (!isAuthenticated) {
-    // If trying to access admin panel, go to admin login
-    if (adminOnly || window.location.pathname.startsWith('/admin')) {
-      redirectTo('/admin/login');
-      return null;
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      if (adminOnly || window.location.pathname.startsWith('/admin')) {
+        redirectTo('/portal/admin/login');
+      } else {
+        redirectTo('/portal/login');
+      }
     }
-    // Otherwise go to standard login
-    redirectTo('/login');
+  }, [isAuthenticated, adminOnly]);
+
+  if (!isAuthenticated) {
     return null;
   }
 

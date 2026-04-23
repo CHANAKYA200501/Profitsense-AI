@@ -1,10 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
-import random
 from agents.opportunity_radar import OpportunityRadarAgent
 from services.pattern_detector import PatternDetector
-from api.paper_trading import PAPER_TRADES, DEMO_CASH_BALANCE
+from .trade_db import get_trades, get_balance
 
 router = APIRouter()
 
@@ -31,22 +30,23 @@ async def chat_assistant(request: ChatRequest) -> ChatResponse:
     """Next-Gen AI Assistant: Portfolio-aware and Tool-integrated."""
     msg = request.message.lower()
     radar = OpportunityRadarAgent()
-    detector = PatternDetector()
+    PatternDetector()
     
     reasoning_steps = [
         ReasoningStep(title="QUERY_INTENT_CLASSIFICATION", content=f"Analyzing vector: '{msg[:20]}...'. Intent identified: { 'PORTFOLIO_DIAGNOSTICS' if 'portfolio' in msg else 'MARKET_INTELLIGENCE' }."),
-        ReasoningStep(title="CONTEXT_RETRIEVAL", content=f"Fetching active state: {len(PAPER_TRADES)} positions detected. Wallet: ₹{DEMO_CASH_BALANCE:,.0f}."),
+        ReasoningStep(title="CONTEXT_RETRIEVAL", content=f"Fetching active state: {len(get_trades())} positions detected. Wallet: ₹{get_balance():,.0f}."),
     ]
     
     citations = []
     
     # 1. PORTFOLIO_DIAGNOSTICS
     if "portfolio" in msg or "risk" in msg or "holdings" in msg:
-        if not PAPER_TRADES:
+        trades = get_trades()
+        if not trades:
             reply = "Your 'ASSET_VAULT' is currently empty. I recommend scanning the 'Opportunity Radar' for entry vectors to deploy your ₹10 Lakh demo capital."
             reasoning_steps.append(ReasoningStep(title="VAULT_SCAN", content="Sector exposure: 0%. Liquidity: 100%."))
         else:
-            symbols = [t['symbol'] for t in PAPER_TRADES if t['status'] == 'OPEN']
+            symbols = [t['symbol'] for t in trades if t['status'] == 'OPEN']
             reply = f"Analysis of your {len(symbols)} active positions ({', '.join(symbols)}) indicates a concentrated risk profile. Your top exposure is in {symbols[0]}. I recommend diversifying into laggard sectors identified by the Radar."
             reasoning_steps.append(ReasoningStep(title="RISK_ENGINE_SYNC", content="Calculated VAR (Value at Risk) across active symbols. Correlation matrix suggests high intra-sector dependency."))
             citations.append(Citation(label="Portfolio Exposure", symbol=symbols[0], source="Asset Vault"))

@@ -1,0 +1,152 @@
+[
+  {
+    "id": "4f49de32-28fe-4f16-9d60-30a722bbda40",
+    "user_id": "ae0ab0ee-a629-4ebd-8122-75498e923f89",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T07:08:00.491980"
+  },
+  {
+    "id": "40c9447c-e47e-45aa-be2e-2fb9e0318138",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T07:20:38.069164"
+  },
+  {
+    "id": "9b68e03d-c394-43a6-ad0c-9b13bed41022",
+    "user_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T07:33:17.892388"
+  },
+  {
+    "id": "3d77551e-ffbb-4c1c-9d16-2caad791dcff",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:02:30.911147"
+  },
+  {
+    "id": "d530a542-ead0-41c4-a354-18cfe59c6fe6",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:03:55.225227"
+  },
+  {
+    "id": "afd02e4d-b0b3-4a53-bba0-193b6fa86a23",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:04:06.594064"
+  },
+  {
+    "id": "f916cda9-a80e-4f8b-9c16-b48ef1c17e60",
+    "user_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:04:56.726129"
+  },
+  {
+    "id": "b44fdbb3-a159-4fbc-82de-81024466ab31",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:05:26.941178"
+  },
+  {
+    "id": "48ea5c5a-cf96-4232-bee1-b8566b085158",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T08:15:19.780364"
+  },
+  {
+    "id": "4fe48221-4455-4f1e-b0cd-0722db1e0042",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T11:33:34.617371"
+  },
+  {
+    "id": "9ff2944e-3b3b-44dd-a2d3-de5640a97a30",
+    "user_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T11:44:22.355317"
+  },
+  {
+    "id": "3a3dada6-0072-4cf9-aa72-366831b1ac90",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T11:48:34.008390"
+  },
+  {
+    "id": "af869e11-84a1-4c5c-9610-1c476e8b1a27",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T21:21:30.330486"
+  },
+  {
+    "id": "1a5db7c0-c8a0-4606-960c-e4d5d9333f26",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T21:37:22.686919"
+  },
+  {
+    "id": "3b34cf84-ec70-44e7-af48-c1a96c417f13",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-23T22:00:15.557674"
+  }
+]

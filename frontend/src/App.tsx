@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Dashboard } from './pages/Dashboard';
 import { AdminApp } from './admin/AdminApp';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { AdminLoginStandalone } from './pages/AdminLoginStandalone';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { useStore } from './store/useStore';
+
+import { PortalApp } from './portal/PortalApp';
 
 function App() {
   const [path, setPath] = useState(window.location.pathname);
-  const { isAuthenticated } = useStore();
 
   useEffect(() => {
     const onPopState = () => setPath(window.location.pathname);
@@ -17,12 +14,27 @@ function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // Simple Router Switch
+  // Redirect old auth routes to new portal auth routes
+  useEffect(() => {
+    if (path === '/login') {
+      window.history.replaceState({}, '', '/portal/login');
+      setPath('/portal/login');
+    } else if (path === '/register') {
+      window.history.replaceState({}, '', '/portal/register');
+      setPath('/portal/register');
+    } else if (path === '/admin/login') {
+      window.history.replaceState({}, '', '/portal/admin/login');
+      setPath('/portal/admin/login');
+    }
+  }, [path]);
+
+  // Portal routes — handles its own routing inside
+  if (path.startsWith('/portal')) {
+    return <PortalApp />;
+  }
+
+  // Simple Router Switch (existing routes)
   const renderRoute = () => {
-    if (path === '/register' && !isAuthenticated) return <Register />;
-    if (path === '/login' && !isAuthenticated) return <Login />;
-    if (path === '/admin/login' && !isAuthenticated) return <AdminLoginStandalone />;
-    
     if (path.startsWith('/admin')) {
       return (
         <ProtectedRoute adminOnly>

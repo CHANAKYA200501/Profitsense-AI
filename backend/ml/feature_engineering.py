@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
+import yfinance as yf
 
 try:
     import pandas_ta as ta
 except ImportError:
     ta = None
 
-from typing import List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class FeatureEngineer:
     """
