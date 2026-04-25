@@ -69,7 +69,8 @@ async def trigger_scan_now():
             
         admin_api.set_signals_ref(signals)
         return {"status": "success", "signals_generated": len(signals), "signals": signals}
-    except Exception:
+    except Exception as e:
+        print(f"Main scan failed, falling back: {e}")
         # Fallback: generate demo signals from real market data
         result = _generate_fallback_signals()
         admin_api.set_signals_ref(result.get("signals", []))
@@ -90,35 +91,24 @@ def _generate_fallback_signals():
             return default if math.isnan(f) else f
         except (TypeError, ValueError):
             return default
+            
+    print("Generating fallback signals...")
     
     WATCHLIST = [
-        # IT
-        "TCS.NS", "INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS",
-        # Banks / Finance
-        "HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS",
-        # Energy / Infra / Power
-        "RELIANCE.NS", "NTPC.NS", "ONGC.NS", "POWERGRID.NS", "COALINDIA.NS", "LT.NS",
-        # Auto
-        "MARUTI.NS", "TATAMOTORS.NS", "M&M.NS", "BAJAJ-AUTO.NS",
-        # Pharma
-        "SUNPHARMA.NS", "CIPLA.NS", "DRREDDY.NS", "DIVISLAB.NS",
-        # Metal
-        "TATASTEEL.NS", "JSWSTEEL.NS", "HINDALCO.NS",
-        # FMCG
-        "ITC.NS", "HINDUNILVR.NS",
-        # Worldwide
-        "AAPL", "TSLA", "GOOGL", "MSFT", "AMZN", "NVDA", "META"
+        "RELIANCE.NS", "TCS.NS", "INFY.NS", "TATAMOTORS.NS", "HDFCBANK.NS",
+        "AAPL", "TSLA", "NVDA", "MSFT", "GOOGL"
     ]
     signals = []
     
     for full_ticker in WATCHLIST:
         symbol = full_ticker.split('.')[0]
         try:
+            print(f"Fetching data for {full_ticker}")
             ticker = yf.Ticker(full_ticker)
             df = ticker.history(period="1mo")
             # Drop rows with NaN OHLC values
             df = df.dropna(subset=["Open", "High", "Low", "Close"])
-            if df.empty or len(df) < 10:
+            if df.empty or len(df) < 5:
                 continue
             
             closes = [safe_float(c) for c in df["Close"].values]
