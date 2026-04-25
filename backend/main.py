@@ -12,7 +12,13 @@ app = FastAPI(title="ProfitSense AI API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost", "http://localhost:5173", "http://localhost:5174"],
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://profitsense-ai.vercel.app",
+        "https://profitsense-ai-git-main-chanakya200501s-projects.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
