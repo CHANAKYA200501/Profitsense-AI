@@ -97,5 +97,55 @@
     "ip_address": "127.0.0.1",
     "user_agent": "",
     "timestamp": "2026-04-23T22:04:45.922138"
+  },
+  {
+    "id": "1c008255-ce8f-40f3-b174-6c28fd514839",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "admin_login",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "timestamp": "2026-04-25T23:35:48.673009"
+  },
+  {
+    "id": "b794d4a7-bb4a-452b-8453-2315dc4e6c93",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "user_deleted",
+    "target_type": "user",
+    "target_id": "ae0ab0ee-a629-4ebd-8122-75498e923f89",
+    "before_state": {
+      "email": "testuser@etmind.ai"
+    },
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "timestamp": "2026-04-25T23:36:55.047744"
+  },
+  {
+    "id": "5dc44cba-e81e-4c1e-bd5b-d09eb11a4bb8",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-25T23:39:19.965909"
+  },
+  {
+    "id": "d58d000c-c86a-40f2-bbb8-aedb842fa4b8",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "admin_login",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "timestamp": "2026-04-25T23:43:55.203755"
   }
 ]

@@ -12,13 +12,13 @@
     "totp_enabled": true,
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:06:43.298849",
-    "updated_at": "2026-04-23T11:44:22.354626",
+    "updated_at": "2026-04-25T23:43:55.201875",
     "deleted_at": null
   },
   {
     "id": "ae0ab0ee-a629-4ebd-8122-75498e923f89",
-    "email": "testuser@etmind.ai",
-    "name": "Test User",
+    "email": "deleted_ae0ab0ee-a629-4ebd-8122-75498e923f89@anon.local",
+    "name": "Deleted User",
     "password_hash": "7c1a746d5a30bd530d680abc75ff50e6$dd38c872f13f5b7e76fa195c7b7cc5375818d8d82d835f90087f0e31b0c057f4",
     "role": "user",
     "status": "pending_kyc",
@@ -29,7 +29,7 @@
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:06:43.316370",
     "updated_at": "2026-04-23T07:08:00.490715",
-    "deleted_at": null
+    "deleted_at": "2026-04-25T23:36:55.047220"
   },
   {
     "id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
@@ -44,7 +44,7 @@
     "totp_enabled": false,
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:20:38.049692",
-    "updated_at": "2026-04-23T22:00:15.556660",
+    "updated_at": "2026-04-25T22:42:43.947790",
     "deleted_at": null
   }
 ]
