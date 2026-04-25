@@ -1,0 +1,83 @@
+services:
+  # PostgreSQL Database
+  - type: pserver
+    name: profitsense-db
+    plan: standard
+    ipAllowList: []
+
+  # Redis Cache
+  - type: redis
+    name: profitsense-redis
+    plan: standard
+    maxmemoryPolicy: noevict
+
+  # Main Web Service
+  - type: web
+    name: profitsense-backend
+    env: python
+    plan: standard
+    runtime: python-3.10
+    buildCommand: "pip install -r backend/requirements.txt && cd backend && alembic upgrade head"
+    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /api/health
+    healthCheckTimeout: 30
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.10"
+      - key: ENVIRONMENT
+        value: "production"
+      - key: PORT
+        value: "8000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: profitsense-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: profitsense-redis
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: "https://your-frontend-domain.com"
+      # Add these in Render dashboard (don't commit secrets)
+      # - key: JWT_SECRET_KEY
+      # - key: TELEGRAM_BOT_TOKEN
+      # - key: TELEGRAM_CHAT_ID
+
+  # Celery Worker for Background Tasks
+  - type: background_worker
+    name: profitsense-celery-worker
+    env: python
+    plan: standard
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && celery -A tasks.celery_app worker --loglevel=info --concurrency=2"
+    envVars:
+      - key: ENVIRONMENT
+        value: "production"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: profitsense-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: profitsense-redis
+          property: connectionString
+
+  # Celery Beat Scheduler for Scheduled Tasks
+  - type: background_worker
+    name: profitsense-celery-beat
+    env: python
+    plan: standard
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && celery -A tasks.celery_app beat --loglevel=info"
+    envVars:
+      - key: ENVIRONMENT
+        value: "production"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: profitsense-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: profitsense-redis
+          property: connectionString
