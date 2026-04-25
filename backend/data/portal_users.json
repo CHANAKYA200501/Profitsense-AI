@@ -44,7 +44,7 @@
     "totp_enabled": false,
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:20:38.049692",
-    "updated_at": "2026-04-25T22:42:43.947790",
+    "updated_at": "2026-04-25T23:56:53.351000",
     "deleted_at": null
   }
 ]

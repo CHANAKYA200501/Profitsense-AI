@@ -188,5 +188,15 @@
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "failure_reason": null,
     "created_at": "2026-04-25T23:43:55.203398"
+  },
+  {
+    "id": "7b10faf7-e75a-43c3-8824-99eaf4c0b296",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-25T23:56:53.352271"
   }
 ]

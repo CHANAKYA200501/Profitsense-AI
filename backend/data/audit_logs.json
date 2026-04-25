@@ -147,5 +147,17 @@
     "ip_address": "127.0.0.1",
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "timestamp": "2026-04-25T23:43:55.203755"
+  },
+  {
+    "id": "a62329e7-c210-490e-802b-2900bbff38f2",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-25T23:52:59.233000"
   }
 ]

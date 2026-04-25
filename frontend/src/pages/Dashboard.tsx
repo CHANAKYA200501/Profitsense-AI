@@ -60,7 +60,9 @@ export const Dashboard: React.FC = () => {
   }, [resize, stopResizing]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8000/ws/live');
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const wsUrl = apiBase.replace(/^http/, 'ws') + '/ws/live';
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
       setConnected(true);
