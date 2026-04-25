@@ -139,14 +139,20 @@ def generate_csrf_token() -> str:
     return hashlib.sha256(os.urandom(32)).hexdigest()
 
 
+IS_PRODUCTION = os.getenv("RENDER", "") != ""  # Render sets RENDER=true automatically
+
+
 def set_auth_cookies(response, access_token: str, refresh_token: str):
     """Set httpOnly secure cookies on response."""
+    secure = IS_PRODUCTION  # True on Render (HTTPS), False on localhost
+    samesite = "none" if IS_PRODUCTION else "lax"  # "none" required for cross-origin
+
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,  # Set True in production (HTTPS)
-        samesite="lax",
+        secure=secure,
+        samesite=samesite,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -154,14 +160,14 @@ def set_auth_cookies(response, access_token: str, refresh_token: str):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=secure,
+        samesite=samesite,
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        path="/api/auth/refresh",
+        path="/",
     )
 
 
 def clear_auth_cookies(response):
     """Clear auth cookies on logout."""
     response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/api/auth/refresh")
+    response.delete_cookie("refresh_token", path="/")

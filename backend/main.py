@@ -17,7 +17,8 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "https://profitsense-ai.vercel.app",
-        "https://profitsense-ai-git-main-chanakya200501s-projects.vercel.app"
+        "https://profitsense-ai-git-main-chanakya200501s-projects.vercel.app",
+        "https://profitsense-ai-iizkiyl9k-chanakya200501s-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
