@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { Play, Loader, RefreshCw, Search } from 'lucide-react';
+import { Play, Loader, RefreshCw, Search, AlertTriangle } from 'lucide-react';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const SignalFeed: React.FC = () => {
   const { signals, setActiveSymbol, setSignals, activeSymbol } = useStore();
   const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredSignals = useMemo(() => {
@@ -19,14 +22,26 @@ export const SignalFeed: React.FC = () => {
 
   const runScan = useCallback(async () => {
     setIsScanning(true);
+    setScanError('');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/scan_now`, { method: 'POST' });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const res = await fetch(`${API_BASE}/api/scan_now`, {
+        method: 'POST',
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
       const json = await res.json();
-      if (json.status === 'success' && json.signals?.length > 0) {
+      console.log('Scan result:', json);
+      if (json.signals && json.signals.length > 0) {
         setSignals(json.signals);
         setActiveSymbol(json.signals[0].symbol);
+      } else {
+        setScanError(`Scan returned 0 signals. Backend: ${API_BASE}`);
       }
-    } catch (e) {
+    } catch (e: any) {
+      const msg = e?.name === 'AbortError' ? 'Scan timed out (60s). Backend may be slow.' : `Connection failed: ${API_BASE}`;
+      setScanError(msg);
       console.error('Scan request failed', e);
     } finally {
       setIsScanning(false);
@@ -92,8 +107,23 @@ export const SignalFeed: React.FC = () => {
               <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Fetching Market Signals...</p>
             </div>
           ) : filteredSignals.length === 0 ? (
-            <div className="text-center py-20 text-gray-700">
-               <span className="text-[10px] font-black uppercase tracking-widest">{searchQuery ? 'No matching signals found.' : 'Waiting for Data Feed...'}</span>
+            <div className="text-center py-16 px-4">
+              {scanError ? (
+                <div className="space-y-4">
+                  <AlertTriangle size={28} className="mx-auto text-amber-500" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-red-500">{scanError}</p>
+                  <button
+                    onClick={runScan}
+                    className="text-[9px] font-black uppercase tracking-widest px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    Retry Scan
+                  </button>
+                </div>
+              ) : (
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  {searchQuery ? 'No matching signals found.' : 'Waiting for Data Feed...'}
+                </span>
+              )}
             </div>
           ) : (
             filteredSignals.map((sig: any) => {
