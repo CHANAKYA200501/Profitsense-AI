@@ -142,7 +142,7 @@ export const UserShell: React.FC = () => {
         </nav>
 
         <div className="p-4 border-t border-slate-100 space-y-2">
-          <button onClick={() => { window.history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+          <button onClick={() => { window.location.href = '/'; }}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-blue-600 hover:text-cyan-300 hover:bg-blue-50 border border-blue-200 transition-all text-sm font-medium shadow-sm"
             title="Trading Terminal">
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -183,7 +183,7 @@ export const AdminShell: React.FC = () => {
         {/* User Status */}
         <div className="p-4 border-t border-slate-100 bg-slate-50">
           <button 
-            onClick={() => { window.history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+            onClick={() => { window.location.href = '/'; }}
             className="w-full mb-3 flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-black transition-colors shadow-sm italic rounded-none border border-blue-700"
           >
             <ArrowRightLeft size={12} /> Trading Terminal
