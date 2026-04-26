@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { TrendingUp, TrendingDown, X, Brain, AlertTriangle, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, X, Brain, AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NewsItem {
@@ -48,19 +48,28 @@ interface MarketReport {
 export const MarketView: React.FC = () => {
   const [report, setReport] = useState<MarketReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedDomains] = useState<string[]>(['Markets', 'Stocks', 'Economy']);
   const [notifications, setNotifications] = useState<NewsItem[]>([]);
   const [notificationsEnabled] = useState(true);
   const previousNewsIds = useRef<Set<string>>(new Set());
 
   const fetchMarketData = useCallback(async (isInitial: boolean = false) => {
+    if (isInitial) setLoading(true);
+    else setRefreshing(true);
     try {
-      const reportRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/report`);
-      const reportJson = await reportRes.json();
-      const overviewRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/overview`);
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      // Cache-bust on manual/background refresh so backend doesn't serve stale
+      const bust = isInitial ? '' : `?_t=${Date.now()}`;
+      const [reportRes, overviewRes] = await Promise.all([
+        fetch(`${apiBase}/api/market/report${bust}`),
+        fetch(`${apiBase}/api/market/overview${bust}`),
+      ]);
+      const reportJson  = await reportRes.json();
       const overviewJson = await overviewRes.json();
-      
+
       if (reportJson.status === 'success' && overviewJson.status === 'success') {
         const fullReport = {
           ...reportJson.report,
@@ -83,19 +92,24 @@ export const MarketView: React.FC = () => {
         }
         newNews.forEach((item: NewsItem) => previousNewsIds.current.add(item.title));
         setReport(fullReport);
+        setLastUpdated(new Date());
+        setError(null);
       } else {
         if (isInitial) setError('Failed to fetch intelligence reports');
       }
     } catch (err) {
       if (isInitial) setError('Network error fetching market telemetry.');
+      // On background refresh, silently keep existing data
     } finally {
-      if (isInitial) setLoading(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   }, [notificationsEnabled, selectedDomains]);
 
   useEffect(() => {
     fetchMarketData(true);
-    const interval = setInterval(() => fetchMarketData(false), 30000);
+    // Refresh every 60 seconds (backend cache is 10 min, so no point polling faster)
+    const interval = setInterval(() => fetchMarketData(false), 60000);
     return () => clearInterval(interval);
   }, [fetchMarketData]);
 
@@ -133,8 +147,11 @@ export const MarketView: React.FC = () => {
            <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed tracking-wide">
              The system was unable to establish a secure data uplink with the primary ticker stream. Potential connectivity issues detected.
            </p>
-           <button onClick={() => fetchMarketData(true)} className="mt-4 py-4 bg-blue-600 text-white font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-blue-700 transition-all shadow-sm">
-             Retry Synchronization &gt;&gt;
+           <button
+             onClick={() => { setError(null); setLoading(true); fetchMarketData(true); }}
+             className="mt-4 py-4 bg-blue-600 text-white font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-3"
+           >
+             <RefreshCw size={12} /> Retry Synchronization &gt;&gt;
            </button>
         </div>
       </div>
@@ -155,7 +172,7 @@ export const MarketView: React.FC = () => {
 
   return (
     <div className="flex-1 h-full overflow-y-auto p-8 bg-[#f8fafc] font-sans custom-scrollbar relative">
-      
+
       {/* Tactical Toast Notifications */}
       <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3 w-96 pointer-events-none">
         <AnimatePresence>
@@ -188,6 +205,28 @@ export const MarketView: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-10 relative z-10">
+
+        {/* Page header with refresh control */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[10px] uppercase tracking-widest font-bold text-blue-600 flex items-center gap-3 italic">
+              <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" /> Market Ecosystem
+            </h2>
+            {lastUpdated && (
+              <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic">
+                Last refreshed: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => fetchMarketData(false)}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-blue-600 hover:text-blue-600 text-slate-400 text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm italic disabled:opacity-40"
+          >
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
         
         {/* Core Indices */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

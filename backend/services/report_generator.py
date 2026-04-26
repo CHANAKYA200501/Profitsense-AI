@@ -37,9 +37,10 @@ class MarketReportGenerator:
         'Infra':    ['LT.NS'],
     }
 
-    _cache = {}
-    _cache_time = None
-    _CACHE_DURATION = timedelta(minutes=5)
+    _cache: dict = {}
+    _cache_time: datetime | None = None
+    _cache_date: str | None = None          # tracks which trading day the cache belongs to
+    _CACHE_DURATION = timedelta(minutes=10)  # refresh every 10 min during market hours
 
     def _fetch_index(self, yf_symbol: str, period: str = '1mo') -> pd.DataFrame:
         t = yf.Ticker(yf_symbol)
@@ -73,7 +74,15 @@ class MarketReportGenerator:
     def generate_report(self) -> dict:
         """Generate the full daily market intelligence report with caching and parallel fetching."""
         now = datetime.now()
-        if self._cache_time and (now - self._cache_time) < self._CACHE_DURATION:
+        today_str = now.strftime('%Y-%m-%d')
+
+        # Invalidate cache if: time expired OR it's a new calendar day
+        cache_expired = (
+            self._cache_time is None or
+            (now - self._cache_time) >= self._CACHE_DURATION or
+            self._cache_date != today_str
+        )
+        if not cache_expired and self._cache:
             return self._cache
 
         report = {'generated_at': now.isoformat(), 'indices': {}}
@@ -121,9 +130,12 @@ class MarketReportGenerator:
             ticker_changes = {}  # sym -> {'price': float, 'change_pct': float, 'volume': int}
 
             def _fetch_one(sym: str):
-                """Fetch a single ticker's 5-day history and compute change."""
+                """Fetch a single ticker's 2-day history and compute change."""
                 try:
-                    hist = yf.Ticker(sym).history(period='5d')
+                    hist = yf.Ticker(sym).history(period='2d')
+                    if hist.empty or len(hist) < 2:
+                        # Fallback to 5d if 2d insufficient (weekends/holidays)
+                        hist = yf.Ticker(sym).history(period='5d')
                     if hist.empty or len(hist) < 2:
                         return None
                     hist = hist.dropna(subset=['Close'])
@@ -193,7 +205,9 @@ class MarketReportGenerator:
             'ai_insight': insight,
         }
 
-        # Update cache
+        # Update cache with date tag
         self.__class__._cache = report
         self.__class__._cache_time = now
+        self.__class__._cache_date = today_str
+        print(f"[ReportGen] Cache updated at {now.isoformat()} for date {today_str}")
         return report
