@@ -95,14 +95,35 @@ def _generate_fallback_signals():
             
     print("Generating fallback signals...")
     
-    WATCHLIST = [
-        "RELIANCE.NS", "TCS.NS", "INFY.NS", "TATAMOTORS.NS", "HDFCBANK.NS",
-        "AAPL", "TSLA", "NVDA", "MSFT", "GOOGL"
+    # ── Indian Equities (NSE) ──────────────────────────────────────────────
+    NSE = [
+        "RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS", "ICICIBANK.NS",
+        "HINDUNILVR.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "KOTAKBANK.NS",
+        "LT.NS", "WIPRO.NS", "AXISBANK.NS", "HCLTECH.NS", "BAJFINANCE.NS",
+        "TATAMOTORS.NS", "MARUTI.NS", "TITAN.NS", "ULTRACEMCO.NS", "ASIANPAINT.NS",
+        "SUNPHARMA.NS", "DRREDDY.NS", "CIPLA.NS", "ONGC.NS", "NTPC.NS",
     ]
+    # ── US Equities ────────────────────────────────────────────────────────
+    US = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
+        "TSLA", "META", "NFLX", "AMD", "INTC",
+        "JPM", "BAC", "V", "MA", "DIS",
+    ]
+    # ── Crypto (via yfinance -USD pairs) ──────────────────────────────────
+    CRYPTO = [
+        "BTC-USD", "ETH-USD", "BNB-USD", "SOL-USD", "XRP-USD",
+        "ADA-USD", "DOGE-USD", "DOT-USD", "AVAX-USD", "MATIC-USD",
+        "LINK-USD", "LTC-USD", "ATOM-USD", "UNI-USD", "SHIB-USD",
+    ]
+    WATCHLIST = NSE + US + CRYPTO
     signals = []
     
     for full_ticker in WATCHLIST:
-        symbol = full_ticker.split('.')[0]
+        # Determine asset class for display
+        is_crypto = full_ticker.endswith("-USD")
+        is_nse    = full_ticker.endswith(".NS")
+        symbol = full_ticker.split('.')[0].split('-')[0]   # RELIANCE / BTC / AAPL
+        currency_sym = "$" if (is_crypto or not is_nse) else "₹"
         try:
             print(f"Fetching data for {full_ticker}")
             ticker = yf.Ticker(full_ticker)
@@ -184,10 +205,10 @@ def _generate_fallback_signals():
                 "narration": {
                     "headline": f"{'Bullish momentum' if is_bullish else 'Bearish pressure'} on {symbol}",
                     "what_happened": f"RSI at {rsi} {'(oversold zone)' if rsi < 30 else '(overbought zone)' if rsi > 70 else ''}, "
-                                     f"price {'above' if current > ema_20 else 'below'} EMA-20 (₹{ema_20}). "
+                                     f"price {'above' if current > ema_20 else 'below'} EMA-20 ({currency_sym}{ema_20}). "
                                      f"MACD {'positive' if macd_val > 0 else 'negative'} at {macd_val}. "
                                      f"{'Breakout detected near 20-day high.' if breakout else ''}",
-                    "suggested_action": f"{'Consider entry on dips near ₹' + str(round(ema_20, 0)) if is_bullish else 'Consider booking profits or hedging position.'}"
+                    "suggested_action": f"{'Consider entry on dips near ' + currency_sym + str(round(ema_20, 0)) if is_bullish else 'Consider booking profits or hedging position.'}"
                 },
                 "technical_indicators": {
                     "rsi_14": rsi,
@@ -212,21 +233,22 @@ def _generate_fallback_signals():
                 ],
                 "decision_reasons": [
                     f"RSI-14 at {rsi} — {'oversold' if rsi < 30 else 'overbought' if rsi > 70 else 'neutral range'}",
-                    f"Price {'above' if current > ema_20 else 'below'} EMA-20 (₹{ema_20})",
+                    f"Price {'above' if current > ema_20 else 'below'} EMA-20 ({currency_sym}{ema_20})",
                     f"MACD {'bullish' if macd_val > 0 else 'bearish'} crossover",
                     f"EMA-20 {'>' if ema_20 > ema_50 else '<'} EMA-50 — {'uptrend' if ema_20 > ema_50 else 'downtrend'}",
                 ],
                 "trade_parameters": {
                     "symbol": symbol,
+                    "asset_class": "CRYPTO" if is_crypto else ("EQUITY_IN" if is_nse else "EQUITY_US"),
                     "direction": "BUY" if is_bullish else "SELL",
-                    "entry_range": f"₹{round(current * 0.99, 0)} - ₹{round(current * 1.01, 0)}",
-                    "entry_price_est": round(current, 2),
-                    "target": round(current * (1.05 if is_bullish else 0.95), 2),
-                    "stop_loss": round(current * (0.97 if is_bullish else 1.03), 2),
+                    "entry_range": f"{currency_sym}{round(current * 0.99, 4 if is_crypto and current < 1 else 0)} - {currency_sym}{round(current * 1.01, 4 if is_crypto and current < 1 else 0)}",
+                    "entry_price_est": round(current, 4 if is_crypto and current < 10 else 2),
+                    "target": round(current * (1.06 if is_bullish else 0.94), 4 if is_crypto and current < 10 else 2),
+                    "stop_loss": round(current * (0.96 if is_bullish else 1.04), 4 if is_crypto and current < 10 else 2),
                     "risk_tag": "HIGH" if abs(bullish_score) <= 1 else "MEDIUM",
-                    "suggested_qty": max(1, int(50000 / current)),
+                    "suggested_qty": max(1, int(50000 / current)) if not is_crypto else round(500 / current, 6),
                     "confidence": confidence,
-                    "time_horizon": "Swing (3-7 days)"
+                    "time_horizon": "Intra-Day" if is_crypto else "Swing (3-7 days)"
                 }
             }
             signals.append(signal)
