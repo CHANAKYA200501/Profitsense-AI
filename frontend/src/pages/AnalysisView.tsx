@@ -17,6 +17,25 @@ import {
 const sanitizeReason = (reason: string) =>
   reason.replace(/₹?(\d+\.\d{3,})/g, (_m: string, n: string) => `₹${parseFloat(n).toFixed(2)}`);
 
+// Smart price formatter — abbreviates large numbers and picks correct currency
+const fmtPrice = (val: number | undefined | null, assetClass?: string): { text: string; currency: string } => {
+  const currency = (assetClass === 'CRYPTO' || assetClass === 'EQUITY_US') ? '$' : '₹';
+  if (val == null || isNaN(val)) return { text: '—', currency };
+  if (val >= 1_000_000) return { text: `${(val / 1_000_000).toFixed(2)}M`, currency };
+  if (val >= 10_000)   return { text: `${(val / 1_000).toFixed(1)}K`, currency };
+  if (val < 1)         return { text: val.toFixed(4), currency };
+  return { text: val.toLocaleString('en-IN', { maximumFractionDigits: 1 }), currency };
+};
+
+// Dynamic font class based on string length
+const dynFont = (text: string): string => {
+  const len = text.length;
+  if (len <= 4)  return 'text-5xl';
+  if (len <= 7)  return 'text-4xl';
+  if (len <= 10) return 'text-3xl';
+  return 'text-2xl';
+};
+
 export const AnalysisView: React.FC = () => {
   const { signals, activeSymbol, setActiveSymbol } = useStore();
   const activeSignal = signals.find((s) => s.symbol === activeSymbol);
@@ -217,24 +236,50 @@ export const AnalysisView: React.FC = () => {
                   </div>
 
                    {/* Technical Indicators */}
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
-                    <div className="bg-white p-8 border border-slate-200 shadow-sm">
-                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Relative Strength</div>
-                       <div className={`text-5xl font-black ${(activeSignal.technical_indicators?.rsi_14 || 0) > 70 ? 'text-red-600' : (activeSignal.technical_indicators?.rsi_14 || 0) < 30 ? 'text-green-600' : 'text-slate-900'}`}>
-                         {activeSignal.technical_indicators?.rsi_14 || '—'}
+                   {(() => {
+                     const rsiVal = activeSignal.technical_indicators?.rsi_14;
+                     const rsiStr = rsiVal != null ? String(Number(rsiVal).toFixed(1)) : '—';
+                     const ema20Raw = activeSignal.technical_indicators?.ema_20;
+                     const assetClass = activeSignal.trade_parameters?.asset_class;
+                     const { text: emaText, currency: emaCurrency } = fmtPrice(ema20Raw, assetClass);
+                     const macd = activeSignal.technical_indicators?.macd?.crossover || 'Stable';
+                     return (
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
+                         {/* RSI */}
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Relative Strength</div>
+                           <div className={`${dynFont(rsiStr)} font-black leading-none truncate ${
+                             (rsiVal || 0) > 70 ? 'text-red-600' : (rsiVal || 0) < 30 ? 'text-green-600' : 'text-slate-900'
+                           }`}>
+                             {rsiStr}
+                           </div>
+                           <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                             {(rsiVal || 0) > 70 ? 'Overbought' : (rsiVal || 0) < 30 ? 'Oversold' : 'Neutral Zone'}
+                           </div>
+                         </div>
+                         {/* EMA-20 */}
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Moving Avg (20)</div>
+                           <div className={`${dynFont(emaText)} font-black text-slate-900 italic tracking-tighter leading-none truncate`}>
+                             {emaCurrency}{emaText}
+                           </div>
+                           <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">EMA-20</div>
+                         </div>
+                         {/* Momentum */}
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Momentum Index</div>
+                           <div className={`text-2xl font-black uppercase italic leading-none ${
+                             macd === 'BULLISH' ? 'text-green-600' : macd === 'BEARISH' ? 'text-red-600' : 'text-yellow-600'
+                           }`}>
+                             {macd}
+                           </div>
+                           <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                             MACD Signal
+                           </div>
+                         </div>
                        </div>
-                    </div>
-                    <div className="bg-white p-8 border border-slate-200 shadow-sm">
-                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Moving Avg (20)</div>
-                       <div className="text-4xl font-black text-slate-900 italic tracking-tighter">₹{Number(activeSignal.technical_indicators?.ema_20 || 0).toFixed(1)}</div>
-                    </div>
-                    <div className="bg-white p-8 border border-slate-200 shadow-sm">
-                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Momentum Index</div>
-                       <div className={`text-2xl font-black uppercase italic ${activeSignal.technical_indicators?.macd?.crossover === 'BULLISH' ? 'text-green-600' : 'text-red-600'}`}>
-                         {activeSignal.technical_indicators?.macd?.crossover || 'Stable'}
-                       </div>
-                    </div>
-                  </div>
+                     );
+                   })()}
                 </div>
 
                 {/* Peer Analysis */}
