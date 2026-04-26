@@ -27,13 +27,13 @@ const fmtPrice = (val: number | undefined | null, assetClass?: string): { text: 
   return { text: val.toLocaleString('en-IN', { maximumFractionDigits: 1 }), currency };
 };
 
-// Dynamic font class based on string length
+// Dynamic font class based on string length — keeps values inside their card
 const dynFont = (text: string): string => {
   const len = text.length;
-  if (len <= 4)  return 'text-5xl';
-  if (len <= 7)  return 'text-4xl';
-  if (len <= 10) return 'text-3xl';
-  return 'text-2xl';
+  if (len <= 3)  return 'text-3xl';
+  if (len <= 5)  return 'text-2xl';
+  if (len <= 8)  return 'text-xl';
+  return 'text-lg';
 };
 
 export const AnalysisView: React.FC = () => {
@@ -246,9 +246,9 @@ export const AnalysisView: React.FC = () => {
                      return (
                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
                          {/* RSI */}
-                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm">
                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Relative Strength</div>
-                           <div className={`${dynFont(rsiStr)} font-black leading-none truncate ${
+                           <div className={`${dynFont(rsiStr)} font-black leading-none break-all ${
                              (rsiVal || 0) > 70 ? 'text-red-600' : (rsiVal || 0) < 30 ? 'text-green-600' : 'text-slate-900'
                            }`}>
                              {rsiStr}
@@ -258,17 +258,17 @@ export const AnalysisView: React.FC = () => {
                            </div>
                          </div>
                          {/* EMA-20 */}
-                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm">
                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Moving Avg (20)</div>
-                           <div className={`${dynFont(emaText)} font-black text-slate-900 italic tracking-tighter leading-none truncate`}>
+                           <div className={`${dynFont(emaText)} font-black text-slate-900 italic tracking-tighter leading-none break-all`}>
                              {emaCurrency}{emaText}
                            </div>
                            <div className="mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">EMA-20</div>
                          </div>
                          {/* Momentum */}
-                         <div className="bg-white p-8 border border-slate-200 shadow-sm overflow-hidden">
+                         <div className="bg-white p-8 border border-slate-200 shadow-sm">
                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Momentum Index</div>
-                           <div className={`text-2xl font-black uppercase italic leading-none ${
+                           <div className={`text-xl font-black uppercase italic leading-none ${
                              macd === 'BULLISH' ? 'text-green-600' : macd === 'BEARISH' ? 'text-red-600' : 'text-yellow-600'
                            }`}>
                              {macd}
