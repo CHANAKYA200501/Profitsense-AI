@@ -159,5 +159,17 @@
     "ip_address": "127.0.0.1",
     "user_agent": "",
     "timestamp": "2026-04-25T23:52:59.233000"
+  },
+  {
+    "id": "452c0b13-9777-4f36-80f0-f07c51be979b",
+    "admin_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-26T01:50:45.980110"
   }
 ]

@@ -157,7 +157,7 @@
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "created_at": "2026-04-25T22:20:39.003696",
     "expires_at": "2026-05-02T22:20:39.003700",
-    "revoked_at": null
+    "revoked_at": "2026-04-26T01:50:45.979565"
   },
   {
     "id": "7175ad67-f1e8-426c-abcd-6f7311d299fe",
@@ -167,7 +167,7 @@
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "created_at": "2026-04-25T22:42:43.948805",
     "expires_at": "2026-05-02T22:42:43.948814",
-    "revoked_at": null
+    "revoked_at": "2026-04-26T01:50:45.979571"
   },
   {
     "id": "3070706f-5071-484c-9131-f62987fd73ff",
@@ -197,6 +197,26 @@
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "created_at": "2026-04-25T23:56:53.351783",
     "expires_at": "2026-05-02T23:56:53.351786",
+    "revoked_at": "2026-04-26T01:50:45.979572"
+  },
+  {
+    "id": "9c22fd82-a77a-47a8-a5cd-c55c6d54a1b4",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "refresh_token_hash": "6844f8c09677dfe18b96a38800df87f2f543717a4fca707b3e2d5cd769324925",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "created_at": "2026-04-26T01:50:35.917955",
+    "expires_at": "2026-05-03T01:50:35.917957",
+    "revoked_at": "2026-04-26T01:50:45.979573"
+  },
+  {
+    "id": "b891499d-63e6-48b0-a2bd-54f49743b742",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "refresh_token_hash": "7bc63e9c418e74674f43fbd62f916e6501d256a1a9769e51fba1f8ae62716416",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "created_at": "2026-04-26T08:47:40.413739",
+    "expires_at": "2026-05-03T08:47:40.413742",
     "revoked_at": null
   }
 ]
