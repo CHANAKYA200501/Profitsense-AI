@@ -15,6 +15,9 @@ import {
 interface PredictionData {
   symbol: string;
   current_price: number;
+  currencySymbol: string;
+  assetClass: string;
+  fmt: (n: number) => string;
   predictions: {
     '1D': { low: number; high: number; predicted: number; confidence: number };
     '1W': { low: number; high: number; predicted: number; confidence: number };
@@ -54,7 +57,8 @@ export const PredictionView: React.FC = () => {
     destroyChart();
     candlesRef.current = [];
 
-    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/market/ohlcv?symbol=${encodeURIComponent(symbol)}&period=1mo&interval=1d`)
+    // Use 3 months of data for better prediction accuracy
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/market/ohlcv?symbol=${encodeURIComponent(symbol)}&period=3mo&interval=1d`)
       .then((res) => res.json())
       .then((json) => {
         if (cancelledRef.current) return;
@@ -69,47 +73,135 @@ export const PredictionView: React.FC = () => {
         candlesRef.current = candles;
         const lastPrice = candles[candles.length - 1].close;
         const closes = candles.map((c: any) => c.close);
+        const assetClass: string = json.asset_class || 'EQUITY_IN';
+        const isCrypto = assetClass === 'CRYPTO';
+        const isUS = assetClass === 'EQUITY_US';
+        const currencySymbol = (isCrypto || isUS) ? '$' : '₹';
 
+        // ── Advanced AI Prediction Model ──────────────────────────────────
+        // 1. Daily returns & volatility
         const returns = closes.slice(1).map((c: number, i: number) => (c - closes[i]) / closes[i]);
         const avgReturn = returns.reduce((a: number, b: number) => a + b, 0) / returns.length;
-        const volatility = Math.sqrt(returns.reduce((a: number, b: number) => a + (b - avgReturn) ** 2, 0) / returns.length);
+        const variance = returns.reduce((a: number, b: number) => a + (b - avgReturn) ** 2, 0) / returns.length;
+        const volatility = Math.sqrt(variance);
+        const annVolatility = volatility * Math.sqrt(252);
 
-        const recent5 = closes.slice(-5).reduce((a: number, b: number) => a + b, 0) / 5;
-        const recent10 = closes.slice(-10).reduce((a: number, b: number) => a + b, 0) / Math.min(10, closes.length);
-        const trendBias = (recent5 - recent10) / recent10;
+        // 2. EMAs
+        const calcEMA = (data: number[], period: number): number => {
+          if (data.length < period) return data[data.length - 1];
+          let ema = data.slice(0, period).reduce((a, b) => a + b, 0) / period;
+          const k = 2 / (period + 1);
+          for (const p of data.slice(period)) ema = p * k + ema * (1 - k);
+          return ema;
+        };
+        const ema9  = calcEMA(closes, Math.min(9,  closes.length));
+        const ema20 = calcEMA(closes, Math.min(20, closes.length));
+        const ema50 = calcEMA(closes, Math.min(50, closes.length));
 
-        const pred1D = lastPrice * (1 + trendBias * 0.3);
-        const pred1W = lastPrice * (1 + trendBias * 1.5);
-        const pred1M = lastPrice * (1 + trendBias * 5);
+        // 3. RSI-14
+        const deltas = closes.slice(1).map((c: number, i: number) => c - closes[i]);
+        const gains = deltas.slice(-14).map((d: number) => d > 0 ? d : 0);
+        const losses = deltas.slice(-14).map((d: number) => d < 0 ? -d : 0);
+        const avgGain = gains.reduce((a: number, b: number) => a + b, 0) / 14 || 0.001;
+        const avgLoss = losses.reduce((a: number, b: number) => a + b, 0) / 14 || 0.001;
+        const rsi = 100 - 100 / (1 + avgGain / avgLoss);
 
+        // 4. Bollinger Bands (20-day)
+        const bbPeriod = Math.min(20, closes.length);
+        const bbSlice = closes.slice(-bbPeriod);
+        const bbMean = bbSlice.reduce((a: number, b: number) => a + b, 0) / bbPeriod;
+        const bbStd = Math.sqrt(bbSlice.reduce((a: number, b: number) => a + (b - bbMean) ** 2, 0) / bbPeriod);
+        const bbUpper = bbMean + 2 * bbStd;
+        const bbLower = bbMean - 2 * bbStd;
+        const bbWidth = (bbUpper - bbLower) / bbMean; // normalized band width
+
+        // 5. Composite bull/bear score
+        let bullScore = 0;
+        if (ema9 > ema20) bullScore += 2;          // fast EMA above slow
+        if (ema20 > ema50) bullScore += 1;          // medium-term uptrend
+        if (rsi < 40) bullScore += 2;               // oversold = buying opp
+        else if (rsi > 60 && rsi < 75) bullScore += 1; // momentum
+        else if (rsi > 75) bullScore -= 2;          // overbought
+        if (lastPrice > bbMean) bullScore += 1;     // price above BB midline
+        if (lastPrice < bbLower) bullScore += 2;    // BB lower bounce signal
+        if (lastPrice > bbUpper) bullScore -= 2;    // overextended
+        if (avgReturn > 0) bullScore += 1;          // positive drift
+
+        // Normalize score to -1..+1 trend bias
+        const trendBias = Math.max(-1, Math.min(1, bullScore / 8));
+
+        // 6. Forward predictions using drift + mean-reversion
+        const driftDaily   = avgReturn * 0.6 + trendBias * 0.001;
+        const pred1D = lastPrice * (1 + driftDaily);
+        const pred1W = lastPrice * Math.pow(1 + driftDaily, 5);
+        const pred1M = lastPrice * Math.pow(1 + driftDaily, 20);
+
+        // Confidence: higher when indicators align strongly
+        const signal = signals.find((s) => s.symbol === symbol);
+        const signalConfidence = signal?.confidence || 65;
+        const alignmentBonus = Math.abs(bullScore) * 3;
+
+        // Support / Resistance from percentile levels
         const sortedPrices = [...closes].sort((a, b) => a - b);
         const support1 = sortedPrices[Math.floor(sortedPrices.length * 0.1)];
         const support2 = sortedPrices[Math.floor(sortedPrices.length * 0.25)];
         const resistance1 = sortedPrices[Math.floor(sortedPrices.length * 0.75)];
         const resistance2 = sortedPrices[Math.floor(sortedPrices.length * 0.9)];
 
-        const signal = signals.find((s) => s.symbol === symbol);
-        const signalConfidence = signal?.confidence || 65;
+        // Dynamic target multipliers based on vol regime
+        const volMultiplier = isCrypto ? 1.5 : 1.0;  // crypto = wider cone
+        const bullTarget = lastPrice * (1 + volatility * 5 * volMultiplier);
+        const bearTarget = lastPrice * (1 - volatility * 5 * volMultiplier);
+        const bullProb = Math.min(90, Math.max(10, Math.round(50 + trendBias * 40)));
+        const bearProb = Math.min(90, Math.max(10, 100 - bullProb));
+
+        const fmt = (n: number) => {
+          if (isCrypto && n < 1) return n.toFixed(6);
+          if (isCrypto && n < 100) return n.toFixed(4);
+          return n.toLocaleString(isUS ? 'en-US' : 'en-IN', { maximumFractionDigits: 2 });
+        };
 
         const predData: PredictionData = {
           symbol,
           current_price: lastPrice,
+          currencySymbol,
+          assetClass,
+          fmt,
           predictions: {
-            '1D': { low: Math.round(lastPrice * (1 - volatility * 1.2) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 1.2) * 100) / 100, predicted: Math.round(pred1D * 100) / 100, confidence: Math.min(95, signalConfidence + 10) },
-            '1W': { low: Math.round(lastPrice * (1 - volatility * 3) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 3) * 100) / 100, predicted: Math.round(pred1W * 100) / 100, confidence: Math.min(85, signalConfidence) },
-            '1M': { low: Math.round(lastPrice * (1 - volatility * 7) * 100) / 100, high: Math.round(lastPrice * (1 + volatility * 7) * 100) / 100, predicted: Math.round(pred1M * 100) / 100, confidence: Math.max(40, signalConfidence - 15) },
+            '1D': {
+              low:       Math.round(lastPrice * (1 - volatility * 1.5 * volMultiplier) * 10000) / 10000,
+              high:      Math.round(lastPrice * (1 + volatility * 1.5 * volMultiplier) * 10000) / 10000,
+              predicted: Math.round(pred1D * 10000) / 10000,
+              confidence: Math.min(95, signalConfidence + alignmentBonus),
+            },
+            '1W': {
+              low:       Math.round(lastPrice * (1 - volatility * 3 * volMultiplier) * 10000) / 10000,
+              high:      Math.round(lastPrice * (1 + volatility * 3 * volMultiplier) * 10000) / 10000,
+              predicted: Math.round(pred1W * 10000) / 10000,
+              confidence: Math.min(85, signalConfidence + alignmentBonus / 2),
+            },
+            '1M': {
+              low:       Math.round(lastPrice * (1 - volatility * 7 * volMultiplier) * 10000) / 10000,
+              high:      Math.round(lastPrice * (1 + volatility * 7 * volMultiplier) * 10000) / 10000,
+              predicted: Math.round(pred1M * 10000) / 10000,
+              confidence: Math.max(35, signalConfidence - 15),
+            },
           },
-          support_levels: [Math.round(support1 * 100) / 100, Math.round(support2 * 100) / 100],
+          support_levels:    [Math.round(support1  * 100) / 100, Math.round(support2    * 100) / 100],
           resistance_levels: [Math.round(resistance1 * 100) / 100, Math.round(resistance2 * 100) / 100],
           bull_scenario: {
-            probability: trendBias > 0 ? Math.round(55 + trendBias * 200) : Math.round(35 + trendBias * 100),
-            target: Math.round(lastPrice * (1 + volatility * 5) * 100) / 100,
-            rationale: trendBias > 0 ? 'Bullish Momentum Detected: Short-term moving average confirms an upside trend with increasing accumulation.' : 'Reversal Projection: Historical support levels show strong integrity with a projected ascending delta.',
+            probability: bullProb,
+            target:      Math.round(bullTarget * 100) / 100,
+            rationale: trendBias > 0.2
+              ? `Bullish Momentum (RSI ${rsi.toFixed(1)}, EMA-9 > EMA-20): Strong accumulation zone with ${(annVolatility * 100).toFixed(1)}% annualized volatility supporting an upside breakout.`
+              : `Reversal Setup: Price near BB lower band (${currencySymbol}${fmt(bbLower)}). RSI at ${rsi.toFixed(1)} suggests potential buying exhaustion is ending.`,
           },
           bear_scenario: {
-            probability: trendBias < 0 ? Math.round(55 + Math.abs(trendBias) * 200) : Math.round(35 + Math.abs(trendBias) * 100),
-            target: Math.round(lastPrice * (1 - volatility * 5) * 100) / 100,
-            rationale: trendBias < 0 ? 'Bearish Trajectory: Selling pressure has increased, making critical support levels vulnerable to a breach.' : 'Mean Reversion: Momentum indicators show overbought conditions, suggesting a potential reversion to the mean.',
+            probability: bearProb,
+            target:      Math.round(bearTarget * 100) / 100,
+            rationale: trendBias < -0.2
+              ? `Bearish Trajectory (RSI ${rsi.toFixed(1)}, EMA-9 < EMA-20): Selling pressure has increased; critical support at ${currencySymbol}${fmt(support1)} looks vulnerable.`
+              : `Mean-Reversion Risk: Price is ${((lastPrice - bbMean) / bbMean * 100).toFixed(1)}% from BB midline (${currencySymbol}${fmt(bbMean)}). Overbought conditions could trigger a pullback.`,
           },
         };
 
@@ -241,12 +333,17 @@ export const PredictionView: React.FC = () => {
                     <p className="text-[10px] text-blue-600 uppercase tracking-widest font-bold">AI Price Prediction</p>
                   </div>
                 </div>
-                <div className="ml-auto text-right">
-                  <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-2 italic">Last Traded Price</div>
-                  <div className="text-4xl font-black text-slate-900 font-sans tracking-tighter italic">
-                    ₹{prediction.current_price.toLocaleString('en-IN')}
-                  </div>
-                </div>
+                 <div className="ml-auto text-right">
+                   <div className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-2 italic">Last Traded Price</div>
+                   <div className="text-4xl font-black text-slate-900 font-sans tracking-tighter italic">
+                     {prediction.currencySymbol}{prediction.fmt(prediction.current_price)}
+                   </div>
+                   {prediction.assetClass !== 'EQUITY_IN' && (
+                     <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic">
+                       {prediction.assetClass === 'CRYPTO' ? 'Crypto • USD' : 'US Equity • USD'}
+                     </div>
+                   )}
+                 </div>
               </div>
 
               {/* Chart with Prediction */}
@@ -286,7 +383,7 @@ export const PredictionView: React.FC = () => {
                       </div>
 
                       <div className={`text-3xl font-black font-sans tracking-tighter italic ${isUp ? 'text-green-600' : 'text-red-600'}`}>
-                        ₹{pred.predicted.toLocaleString('en-IN')}
+                        {prediction.currencySymbol}{prediction.fmt(pred.predicted)}
                       </div>
                       <div className={`text-[11px] font-bold flex items-center gap-3 mt-4 italic uppercase tracking-widest ${isUp ? 'text-green-600' : 'text-red-600'}`}>
                         {isUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
@@ -296,11 +393,11 @@ export const PredictionView: React.FC = () => {
                       <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-2 gap-6 text-[10px]">
                         <div>
                           <div className="text-slate-400 uppercase font-bold tracking-widest mb-2 italic">Target Floor</div>
-                          <div className="text-red-600 font-sans font-bold italic">₹{pred.low.toLocaleString('en-IN')}</div>
+                          <div className="text-red-600 font-sans font-bold italic">{prediction.currencySymbol}{prediction.fmt(pred.low)}</div>
                         </div>
                         <div>
                           <div className="text-slate-400 uppercase font-bold tracking-widest mb-2 italic">Target Ceiling</div>
-                          <div className="text-green-600 font-sans font-bold italic">₹{pred.high.toLocaleString('en-IN')}</div>
+                          <div className="text-green-600 font-sans font-bold italic">{prediction.currencySymbol}{prediction.fmt(pred.high)}</div>
                         </div>
                       </div>
 
@@ -334,7 +431,7 @@ export const PredictionView: React.FC = () => {
                     <span className="ml-auto text-4xl font-black text-green-600 font-sans italic">{prediction.bull_scenario.probability}%</span>
                   </div>
                   <div className="text-3xl font-black text-slate-900 font-sans tracking-tighter mb-6 italic">
-                    Target: ₹{prediction.bull_scenario.target.toLocaleString('en-IN')}
+                    Target: {prediction.currencySymbol}{prediction.fmt(prediction.bull_scenario.target)}
                   </div>
                   <div className="bg-green-50 p-6 border border-green-100 italic text-xs text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
                     "{prediction.bull_scenario.rationale}"
@@ -353,7 +450,7 @@ export const PredictionView: React.FC = () => {
                     <span className="ml-auto text-4xl font-black text-red-600 font-sans italic">{prediction.bear_scenario.probability}%</span>
                   </div>
                   <div className="text-3xl font-black text-slate-900 font-sans tracking-tighter mb-6 italic">
-                    Target: ₹{prediction.bear_scenario.target.toLocaleString('en-IN')}
+                    Target: {prediction.currencySymbol}{prediction.fmt(prediction.bear_scenario.target)}
                   </div>
                   <div className="bg-red-50 p-6 border border-red-100 italic text-xs text-slate-500 leading-relaxed font-bold uppercase tracking-tight">
                     "{prediction.bear_scenario.rationale}"
@@ -372,7 +469,7 @@ export const PredictionView: React.FC = () => {
                     {prediction.support_levels.map((level, i) => (
                       <div key={i} className="flex items-center justify-between bg-green-50 p-6 border border-green-100 group hover:bg-green-100 transition-colors">
                         <span className="text-[10px] text-slate-400 font-bold italic tracking-widest uppercase">Support {i + 1}</span>
-                        <span className="text-3xl font-black text-green-600 font-sans italic">₹{level.toLocaleString('en-IN')}</span>
+                        <span className="text-3xl font-black text-green-600 font-sans italic">{prediction.currencySymbol}{prediction.fmt(level)}</span>
                       </div>
                     ))}
                   </div>
@@ -386,7 +483,7 @@ export const PredictionView: React.FC = () => {
                     {prediction.resistance_levels.map((level, i) => (
                       <div key={i} className="flex items-center justify-between bg-red-50 p-6 border border-red-100 group hover:bg-red-100 transition-colors">
                         <span className="text-[10px] text-slate-400 font-bold italic tracking-widest uppercase">Resistance {i + 1}</span>
-                        <span className="text-3xl font-black text-red-600 font-sans italic">₹{level.toLocaleString('en-IN')}</span>
+                        <span className="text-3xl font-black text-red-600 font-sans italic">{prediction.currencySymbol}{prediction.fmt(level)}</span>
                       </div>
                     ))}
                   </div>

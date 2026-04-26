@@ -63,23 +63,66 @@ def get_market_overview():
         import traceback
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
 
+# Known crypto assets (yfinance uses SYMBOL-USD)
+_CRYPTO_SYMBOLS = {
+    "BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "DOT",
+    "AVAX", "MATIC", "LINK", "LTC", "ATOM", "UNI", "SHIB",
+    "TRX", "NEAR", "FTM", "APT", "ARB", "OP",
+}
+
+# Known US equities (no suffix needed)
+_US_SYMBOLS = {
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META",
+    "NFLX", "AMD", "INTC", "JPM", "BAC", "V", "MA", "DIS",
+    "WMT", "KO", "PEP", "JNJ", "XOM", "CVX", "PG", "UNH",
+}
+
+def _resolve_yf_ticker(symbol: str) -> tuple[str, str]:
+    """
+    Return (yf_ticker, asset_class) for a bare symbol like BTC / AAPL / RELIANCE.
+    asset_class is one of: CRYPTO | EQUITY_US | EQUITY_IN | INDEX
+    """
+    # Already fully-qualified tickers (e.g. "NIFTY 50")
+    index_map = {"NIFTY 50": ("^NSEI", "INDEX"), "SENSEX": ("^BSESN", "INDEX")}
+    if symbol in index_map:
+        return index_map[symbol]
+
+    sym_upper = symbol.upper()
+
+    # Strip suffixes that may have been passed through from old signals
+    if sym_upper.endswith("-USD"):
+        return (sym_upper, "CRYPTO")
+    if sym_upper.endswith(".NS"):
+        return (sym_upper, "EQUITY_IN")
+
+    if sym_upper in _CRYPTO_SYMBOLS:
+        return (f"{sym_upper}-USD", "CRYPTO")
+    if sym_upper in _US_SYMBOLS:
+        return (sym_upper, "EQUITY_US")
+
+    # Unknown — try NSE first, then bare
+    return (f"{sym_upper}.NS", "EQUITY_IN")
+
+
+def _fetch_df(yf_ticker: str, symbol: str, period: str, interval: str):
+    """Try yf_ticker; if empty and it ends with .NS, retry without suffix."""
+    import yfinance as yf
+    df = _clean_df(yf.Ticker(yf_ticker).history(period=period, interval=interval))
+    if df.empty and yf_ticker.endswith(".NS"):
+        # Fallback: maybe it's a US ticker with the same name
+        df = _clean_df(yf.Ticker(symbol.upper()).history(period=period, interval=interval))
+    return df
+
+
 @router.get("/ohlcv")
 def get_ohlcv(symbol: str = "NIFTY 50", period: str = "1mo", interval: str = "1d"):
-    """Get OHLCV candlestick data for a symbol."""
+    """Get OHLCV candlestick data for any symbol — NSE, US equity, or crypto."""
     try:
-        import yfinance as yf
-        
-        # Map common names to yfinance tickers
-        ticker_map = {
-            "NIFTY 50": "^NSEI",
-            "SENSEX": "^BSESN",
-        }
-        yf_symbol = ticker_map.get(symbol, f"{symbol}.NS")
-        
-        df = _clean_df(yf.Ticker(yf_symbol).history(period=period, interval=interval))
+        yf_ticker, asset_class = _resolve_yf_ticker(symbol)
+        df = _fetch_df(yf_ticker, symbol, period, interval)
         if df.empty:
-            return {"status": "error", "error": f"No data for {symbol}"}
-        
+            return {"status": "error", "error": f"No data for {symbol} (tried {yf_ticker})"}
+
         candles = []
         for idx, row in df.iterrows():
             ts = idx
@@ -87,21 +130,28 @@ def get_ohlcv(symbol: str = "NIFTY 50", period: str = "1mo", interval: str = "1d
                 time_val = int(ts.timestamp())
             else:
                 time_val = str(ts.date())
-            
+
             o, h, l, c = _safe_float(row["Open"]), _safe_float(row["High"]), _safe_float(row["Low"]), _safe_float(row["Close"])
             if o == 0 and h == 0 and l == 0 and c == 0:
                 continue
-            
+
             candles.append({
                 "time": time_val,
-                "open": round(o, 2),
-                "high": round(h, 2),
-                "low": round(l, 2),
-                "close": round(c, 2),
+                "open": round(o, 6 if asset_class == "CRYPTO" and c < 1 else 2),
+                "high": round(h, 6 if asset_class == "CRYPTO" and c < 1 else 2),
+                "low":  round(l, 6 if asset_class == "CRYPTO" and c < 1 else 2),
+                "close": round(c, 6 if asset_class == "CRYPTO" and c < 1 else 2),
                 "volume": int(_safe_float(row["Volume"])),
             })
-        
-        return {"status": "success", "symbol": symbol, "period": period, "data": candles}
+
+        return {
+            "status": "success",
+            "symbol": symbol,
+            "yf_ticker": yf_ticker,
+            "asset_class": asset_class,
+            "period": period,
+            "data": candles,
+        }
     except Exception as e:
         import traceback
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
@@ -112,18 +162,15 @@ def get_intraday(symbol: str = "RELIANCE", interval: str = "5m"):
     """Get intraday OHLCV data (today, 5-min intervals)."""
     try:
         import yfinance as yf
-        
-        ticker_map = {"NIFTY 50": "^NSEI", "SENSEX": "^BSESN"}
-        yf_symbol = ticker_map.get(symbol, f"{symbol}.NS")
-        
-        df = yf.Ticker(yf_symbol).history(period="1d", interval=interval)
-        if df.empty or len(_clean_df(df)) == 0:
+
+        yf_symbol, asset_class = _resolve_yf_ticker(symbol)
+
+        df = _clean_df(yf.Ticker(yf_symbol).history(period="1d", interval=interval))
+        if df.empty or len(df) == 0:
             # Try 5d if market hasn't opened today
-            df = yf.Ticker(yf_symbol).history(period="5d", interval=interval)
-        
-        df = _clean_df(df)
-        if df.empty:
-            return {"status": "error", "error": f"No intraday data for {symbol}"}
+            df = _clean_df(yf.Ticker(yf_symbol).history(period="5d", interval=interval))
+        if df.empty and yf_symbol.endswith(".NS"):
+            df = _clean_df(yf.Ticker(symbol.upper()).history(period="5d", interval=interval))
         
         candles = []
         for idx, row in df.iterrows():
