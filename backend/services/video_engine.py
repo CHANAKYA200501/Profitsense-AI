@@ -17,8 +17,16 @@ class VideoSceneGenerator:
         report = self.report_gen.generate_report()
         nifty = report['indices'].get('NIFTY 50', {}).get('snapshot', {})
         sectors = report['market_intelligence'].get('sectors', {})
-        radar_signals = self.radar.scan_opportunities()
-        top_radar = radar_signals[0] if radar_signals else {"headline": "Stable market consolidation", "impact_est": "+0.0%"}
+
+        # Safe radar fetch
+        try:
+            radar_signals = self.radar.scan_opportunities()
+        except Exception:
+            radar_signals = []
+        top_radar = next(
+            (r for r in radar_signals if r.get('symbol')),
+            {"symbol": "RELIANCE", "headline": "Stable market consolidation", "impact_est": "+0.0%"}
+        )
         
         scenes = []
         
@@ -42,13 +50,15 @@ class VideoSceneGenerator:
         })
         
         # 3. SECTOR_VELOCITY (RACE CHART)
-        top_3_sectors = [ {"name": k, "value": v} for k,v in list(sectors.items())[:3] ]
+        sector_items = [{'name': k, 'value': v} for k, v in list(sectors.items())[:5]]
+        name0 = sector_items[0]['name'] if len(sector_items) > 0 else 'Banking'
+        name1 = sector_items[1]['name'] if len(sector_items) > 1 else 'IT'
         scenes.append({
             "id": "SECTOR_VELOCITY",
             "title": "SECTOR_ROTATION_RACE_V4",
-            "sectors": top_3_sectors,
+            "sectors": sector_items,
             "visual_type": "RACE_CHART",
-            "narration_text": f"Top sector velocity identified in {top_3_sectors[0]['name']} and {top_3_sectors[1]['name']}."
+            "narration_text": f"Top sector velocity identified in {name0} and {name1}."
         })
         
         # 4. RADAR_SIGNAL_DEEP_DIVE
