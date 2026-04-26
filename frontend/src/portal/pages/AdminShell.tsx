@@ -84,6 +84,22 @@ export const AdminShell: React.FC = () => {
 
   useEffect(() => { loadNotifications(); const i = setInterval(loadNotifications, 30000); return () => clearInterval(i); }, [loadNotifications]);
 
+  const handleLogout = useCallback(async () => {
+    await portalApi.logout();
+    logout();
+    window.history.pushState({}, '', '/portal/admin/login');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, [logout]);
+
+  const extendSession = async () => {
+    try {
+      await portalApi.getMe();
+      setShowSessionWarning(false);
+    } catch {
+      handleLogout();
+    }
+  };
+
   // Session timeout check
   useEffect(() => {
     const check = setInterval(() => {
@@ -98,23 +114,7 @@ export const AdminShell: React.FC = () => {
       }
     }, 10000);
     return () => clearInterval(check);
-  }, [sessionExpiresAt, setShowSessionWarning]);
-
-  const handleLogout = async () => {
-    await portalApi.logout();
-    logout();
-    window.history.pushState({}, '', '/admin/login');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  };
-
-  const extendSession = async () => {
-    try {
-      await portalApi.getMe(); // Triggers token refresh
-      setShowSessionWarning(false);
-    } catch {
-      handleLogout();
-    }
-  };
+  }, [sessionExpiresAt, setShowSessionWarning, handleLogout]);
 
   const renderSection = () => {
     switch (activeSection) {

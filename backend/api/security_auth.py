@@ -10,6 +10,7 @@ Implements:
 - POST /change-password
 """
 from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 import hashlib
 
 from .security_models import (
@@ -182,18 +183,22 @@ async def admin_login(body: AdminLoginRequest, request: Request, response: Respo
             raise HTTPException(status_code=403, detail="Admin account locked. Contact security team.")
 
         needs_captcha = failures >= CAPTCHA_THRESHOLD
-        return_data = {
+        return JSONResponse(status_code=200, content={
             "status": "error",
             "detail": f"Invalid credentials. {MAX_LOGIN_ATTEMPTS - failures} attempts remaining.",
             "requires_captcha": needs_captcha,
             "failed_attempts": failures,
-        }
-        raise HTTPException(status_code=401, detail=return_data)
+        })
 
     # Verify TOTP
     if not verify_totp(body.totp_code):
         log_login_event(user["id"], False, ip, ua, failure_reason="invalid_totp")
-        raise HTTPException(status_code=401, detail="Invalid 2FA code")
+        return JSONResponse(status_code=200, content={
+            "status": "error",
+            "detail": "Invalid 2FA code. Please check your authenticator app.",
+            "requires_captcha": False,
+            "failed_attempts": user.get("failed_login_attempts", 0),
+        })
 
     # Reset failed attempts
     update_portal_user(user["id"], {"failed_login_attempts": 0})

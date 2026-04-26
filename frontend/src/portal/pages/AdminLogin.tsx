@@ -32,6 +32,15 @@ export const AdminLogin: React.FC = () => {
     setError('');
     setLoading(true);
 
+    // Validate TOTP — must have all 6 digits filled
+    const cleanTotp = totpCode.padEnd(6, ' ').split('');
+    const filledDigits = cleanTotp.filter(c => /\d/.test(c)).length;
+    if (filledDigits < 6) {
+      setError('Please enter all 6 digits of your authenticator code.');
+      setLoading(false);
+      return;
+    }
+
     if (showCaptcha) {
       if (parseInt(captchaAnswer) !== captchaQuestion.a + captchaQuestion.b) {
         setError('Incorrect CAPTCHA answer. Please try again.');
@@ -45,21 +54,22 @@ export const AdminLogin: React.FC = () => {
       const result = await portalApi.adminLogin(email, password, totpCode);
       if (result.status === 'success') {
         setAuth(result.user, result.csrf_token, result.access_token);
-        window.history.pushState({}, '', '/admin');
+        window.history.pushState({}, '', '/portal/admin');
         window.dispatchEvent(new PopStateEvent('popstate'));
       } else {
         const attempts = failedAttempts + 1;
         setFailedAttempts(attempts);
-        
+        // FastAPI returns {detail: "message"} or {detail: {detail: "message"}}
+        const msg = result.detail?.detail || result.detail || 'Authentication failed. Verify credentials and 2FA code.';
         if (attempts >= 5) {
           setLocked(true);
           setError('Account locked after 5 failed attempts. Please contact security.');
         } else if (attempts >= 3) {
           setShowCaptcha(true);
           generateCaptcha();
-          setError(`Invalid credentials. ${5 - attempts} attempts remaining. Complete CAPTCHA to continue.`);
+          setError(`${msg} Complete CAPTCHA to continue.`);
         } else {
-          setError(result.detail?.detail || result.detail || 'Authentication failed. Please verify your credentials and 2FA code.');
+          setError(msg);
         }
       }
     } catch {
@@ -205,9 +215,9 @@ export const AdminLogin: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading || locked || totpCode.length < 6}
+              disabled={loading || locked || totpCode.replace(/\D/g, '').length < 6}
               className={`w-full py-5 font-black text-sm transition-all flex items-center justify-center gap-4 shadow-md ${
-                loading || locked || totpCode.length < 6
+                loading || locked || totpCode.replace(/\D/g, '').length < 6
                   ? 'bg-slate-100 text-slate-300 cursor-not-allowed border border-slate-200'
                   : 'bg-blue-600 hover:bg-blue-700 text-white active:scale-[0.98]'
               }`}
@@ -218,7 +228,7 @@ export const AdminLogin: React.FC = () => {
 
           <div className="mt-12 text-center border-t border-slate-50 pt-10">
             <button 
-              onClick={() => { window.history.pushState({}, '', '/login'); window.dispatchEvent(new PopStateEvent('popstate')); }}
+              onClick={() => { window.history.pushState({}, '', '/portal/login'); window.dispatchEvent(new PopStateEvent('popstate')); }}
               className="text-[9px] text-slate-300 hover:text-blue-600 font-black transition-all inline-flex items-center gap-2"
             >
               <ArrowLeft size={12} /> / RETURN TO USER HUB /

@@ -33,11 +33,11 @@ export const PortalApp: React.FC = () => {
   // Redirects
   useEffect(() => {
     if ((portalPath === 'login' || portalPath === '') && isAuthenticated) {
-      const dest = user?.role === 'admin' ? '/admin' : '/';
+      const dest = user?.role === 'admin' ? '/portal/admin' : '/portal/user';
       window.history.replaceState({}, '', dest);
       window.dispatchEvent(new PopStateEvent('popstate'));
     } else if (portalPath === 'admin/login' && isAuthenticated && user?.role === 'admin') {
-      window.history.replaceState({}, '', '/admin');
+      window.history.replaceState({}, '', '/portal/admin');
       window.dispatchEvent(new PopStateEvent('popstate'));
     }
   }, [portalPath, isAuthenticated, user?.role]);

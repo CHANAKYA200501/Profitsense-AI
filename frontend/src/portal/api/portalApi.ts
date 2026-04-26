@@ -4,7 +4,7 @@
  * Handles token refresh automatically.
  */
 
-const API_BASE = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:8000')}/api/portal`;
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/portal`;
 
 function getHeaders(): Record<string, string> {
   const csrf = sessionStorage.getItem('portal_csrf') || '';

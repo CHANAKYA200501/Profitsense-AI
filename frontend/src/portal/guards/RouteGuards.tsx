@@ -19,33 +19,15 @@ export const AdminGuard: React.FC<GuardProps> = ({ children }) => {
     if (!isAuthenticated) {
       window.history.pushState({}, '', '/portal/admin/login');
       window.dispatchEvent(new PopStateEvent('popstate'));
+    } else if (user?.role !== 'admin') {
+      // Non-admin authenticated user — redirect to user area
+      window.history.pushState({}, '', '/portal/login');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || user?.role !== 'admin') {
     return null;
-  }
-
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-[#060918] flex items-center justify-center p-8">
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/20 flex items-center justify-center">
-            <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-black text-white mb-2">Admin Access Required</h1>
-          <p className="text-gray-400 text-sm mb-8">This area is restricted to administrators.</p>
-          <button
-            onClick={() => { window.history.pushState({}, '', '/portal/login'); window.dispatchEvent(new PopStateEvent('popstate')); }}
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
   }
 
   return <>{children}</>;
