@@ -12,7 +12,7 @@
     "totp_enabled": true,
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:06:43.298849",
-    "updated_at": "2026-04-25T23:43:55.201875",
+    "updated_at": "2026-04-26T09:54:11.360617",
     "deleted_at": null
   },
   {
@@ -44,7 +44,7 @@
     "totp_enabled": false,
     "failed_login_attempts": 0,
     "created_at": "2026-04-23T07:20:38.049692",
-    "updated_at": "2026-04-26T08:47:40.413257",
+    "updated_at": "2026-04-26T09:55:50.023731",
     "deleted_at": null
   }
 ]

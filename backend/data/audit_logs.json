@@ -171,5 +171,77 @@
     "ip_address": "127.0.0.1",
     "user_agent": "",
     "timestamp": "2026-04-26T01:50:45.980110"
+  },
+  {
+    "id": "6d75e64f-7742-4e64-8bd4-7b9de5702f8c",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "admin_login",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "timestamp": "2026-04-26T09:39:45.584228"
+  },
+  {
+    "id": "d0c8f718-31f2-4860-8c54-deff73cf50c6",
+    "admin_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-26T09:47:56.441377"
+  },
+  {
+    "id": "c05bc760-2e94-448a-bd21-3f127a763e1a",
+    "admin_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-26T09:47:56.442177"
+  },
+  {
+    "id": "09c1b7ab-8671-4f2d-945b-2b2e11d0dae9",
+    "admin_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-26T09:48:14.844104"
+  },
+  {
+    "id": "71cd6f26-0596-4478-a462-0d69180ef0bb",
+    "admin_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "action_type": "logout",
+    "target_type": "session",
+    "target_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "timestamp": "2026-04-26T09:53:27.039245"
+  },
+  {
+    "id": "35a3c6bc-6780-467d-9f54-c140d60dc432",
+    "admin_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "action_type": "admin_login",
+    "target_type": "session",
+    "target_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "before_state": null,
+    "after_state": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "timestamp": "2026-04-26T09:54:11.361914"
   }
 ]

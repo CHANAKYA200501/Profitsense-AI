@@ -218,5 +218,65 @@
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
     "failure_reason": null,
     "created_at": "2026-04-26T08:47:40.414104"
+  },
+  {
+    "id": "85cd20b3-8a60-42a7-9674-665c20ed4a81",
+    "user_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:39:45.583886"
+  },
+  {
+    "id": "08d237bc-1cb7-4675-8e92-d64b654cb2a6",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:47:46.046895"
+  },
+  {
+    "id": "e79d3cc0-ca7e-4e02-948d-ec82db4b0c0f",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:48:03.873100"
+  },
+  {
+    "id": "9f4bbc96-eac8-48ac-a95a-de5064990ea6",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:48:26.333337"
+  },
+  {
+    "id": "91368733-745f-4454-82b7-eaf88e167a6a",
+    "user_id": "262b4bf3-b88d-478c-921f-bb112b34a066",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:54:11.361506"
+  },
+  {
+    "id": "00ff3d80-c43c-4bc4-b7d9-1768d3bb27b6",
+    "user_id": "e0278fc5-c72b-404b-856a-f5d616e4fb59",
+    "success": true,
+    "ip_address": "127.0.0.1",
+    "country": "Unknown",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "failure_reason": null,
+    "created_at": "2026-04-26T09:55:50.024342"
   }
 ]
