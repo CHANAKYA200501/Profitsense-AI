@@ -25,6 +25,11 @@ export const VideoEngineView: React.FC = () => {
   const [isPlaying, setIsPlaying]     = useState(false);
   const [progress, setProgress]       = useState(0);
 
+  // Ref keeps the interval callback in sync with latest scene
+  // without adding currentScene to the effect dependency array
+  const currentSceneRef = React.useRef(0);
+  useEffect(() => { currentSceneRef.current = currentScene; }, [currentScene]);
+
   // ── Fetch live scenes from backend ──────────────────────────────────────
   const fetchScenes = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
@@ -60,26 +65,28 @@ export const VideoEngineView: React.FC = () => {
   // ── Scene playback timer ──────────────────────────────────────────────
   const SCENE_DURATION = 4000; // ms per scene
   useEffect(() => {
-    let interval: any;
-    if (isPlaying && scenes.length > 0) {
-      interval = setInterval(() => {
-        setProgress(prev => {
-          const next = prev + (100 / (SCENE_DURATION / 100));
-          if (next >= 100) {
-            if (currentScene < scenes.length - 1) {
-              setCurrentScene(s => s + 1);
-              return 0;
-            } else {
-              setIsPlaying(false);
-              return 100;
-            }
+    if (!isPlaying || scenes.length === 0) return;
+    // Single persistent interval — does NOT restart when scene changes
+    // because currentScene is read via ref, not from the closure.
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        const next = prev + (100 / (SCENE_DURATION / 100));
+        if (next >= 100) {
+          const nextIdx = currentSceneRef.current + 1;
+          if (nextIdx < scenes.length) {
+            setCurrentScene(nextIdx);
+            return 0;           // reset progress for new scene
+          } else {
+            setIsPlaying(false);
+            return 100;
           }
-          return next;
-        });
-      }, 100);
-    }
+        }
+        return next;
+      });
+    }, 100);
     return () => clearInterval(interval);
-  }, [isPlaying, currentScene, scenes.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, scenes.length]); // intentionally omit currentScene — use ref instead
 
   const reset = () => { setCurrentScene(0); setProgress(0); setIsPlaying(false); };
 
