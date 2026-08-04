@@ -23,10 +23,10 @@ FAILED=0
 check_file() {
     if [ -f "$1" ]; then
         echo -e "${GREEN}✓${NC} Found: $1"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "${RED}✗${NC} Missing: $1"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 }
 
@@ -34,10 +34,10 @@ check_file() {
 check_dir() {
     if [ -d "$1" ]; then
         echo -e "${GREEN}✓${NC} Found: $1"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "${RED}✗${NC} Missing: $1"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 }
 
@@ -51,41 +51,41 @@ check_file "etmind/backend/main.py"
 check_file "etmind/backend/requirements.txt"
 check_file "etmind/backend/Dockerfile"
 check_dir "etmind/backend/migrations"
-check_file "etmind/backend/migrations/alembic.ini"
+check_file "etmind/backend/alembic.ini"
 echo ""
 
 echo "📦 CHECKING REQUIREMENTS..."
 echo "-----------------------------------"
 if grep -q "fastapi" "etmind/backend/requirements.txt"; then
     echo -e "${GREEN}✓${NC} FastAPI found in requirements"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} FastAPI not found in requirements"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if grep -q "uvicorn" "etmind/backend/requirements.txt"; then
     echo -e "${GREEN}✓${NC} Uvicorn found in requirements"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} Uvicorn not found in requirements"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if grep -q "psycopg2" "etmind/backend/requirements.txt"; then
     echo -e "${GREEN}✓${NC} PostgreSQL driver found in requirements"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} PostgreSQL driver not found in requirements"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if grep -q "sqlalchemy" "etmind/backend/requirements.txt"; then
     echo -e "${GREEN}✓${NC} SQLAlchemy found in requirements"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} SQLAlchemy not found in requirements"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 echo ""
 
@@ -93,15 +93,15 @@ echo "🔒 CHECKING SECURITY..."
 echo "-----------------------------------"
 if grep -q ".env" ".gitignore"; then
     echo -e "${GREEN}✓${NC} .env is in .gitignore"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} .env is NOT in .gitignore"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if [ ! -f ".env" ] && [ ! -f "etmind/backend/.env" ]; then
     echo -e "${GREEN}✓${NC} No .env files found locally (good for production)"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} .env file exists locally - make sure it's in .gitignore"
 fi
@@ -111,26 +111,26 @@ echo "🌐 CHECKING MAIN.PY CONFIGURATION..."
 echo "-----------------------------------"
 if grep -q "CORS" "etmind/backend/main.py"; then
     echo -e "${GREEN}✓${NC} CORS middleware is configured"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} CORS middleware not found"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if grep -q "@app.get(\"/api/health\")" "etmind/backend/main.py"; then
     echo -e "${GREEN}✓${NC} Health check endpoint found"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} Health check endpoint not found"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 if grep -q "FastAPI" "etmind/backend/main.py"; then
     echo -e "${GREEN}✓${NC} FastAPI app is initialized"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} FastAPI app not found"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 echo ""
 
